@@ -1,0 +1,5 @@
+18:54:01 [DATASETS] 6 loaded
+18:54:01   [blobs_k3] k_true=3, X=(200, 2) ...
+18:54:04     Silhouette: k_hat=3 (OK) [2.6s]
+18:54:08     Gap: k_hat=3 (OK) [4.2s]
+18:58:54     CBV: k_hat=4 (X) [286.3s]

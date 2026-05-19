@@ -1,0 +1,271 @@
+23:26:12 ============================================================
+23:26:12 Phase 3: Full Benchmark — Paper #10 (CBV)
+23:26:12 ============================================================
+23:26:12 
+[1/4] Building datasets...
+23:26:12   Synthetic: 25 datasets
+23:26:12   Real: 5 datasets
+23:26:12   Total: 30 datasets
+23:26:12 
+[2/4] Building indices...
+23:26:12   7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+23:26:12 
+[3/4] Running benchmark...
+23:31:35   Completed in 322.8s
+23:31:35   Datasets: 30
+23:31:35   Results shape: (30, 16)
+23:31:35 
+[4/4] Generating summary...
+23:31:35 
+Accuracy (fraction correct):
+23:31:35          index  accuracy  n_correct  n_total
+ Gap Statistic  0.633333         19       30
+      CH Index  0.533333         16       30
+    Silhouette  0.466667         14       30
+           CBV  0.400000         12       30
+Davies-Bouldin  0.333333         10       30
+    Dunn Index  0.233333          7       30
+     DUD Index  0.000000          0       30
+23:31:35   Accuracy saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\accuracy.csv
+23:31:35 
+Mean rank (1 = best):
+23:31:35 Silhouette        2.066667
+CH Index          2.566667
+Gap Statistic     3.266667
+CBV               3.966667
+Davies-Bouldin    4.166667
+Dunn Index        5.066667
+DUD Index         6.900000
+dtype: float64
+23:31:35 
+Generating plots...
+23:31:36 
+============================================================
+23:31:36 Phase 3 complete. All outputs in: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results
+23:31:36   - benchmark_results.csv   (summary)
+23:31:36   - per_dataset_results.csv  (full detail)
+23:31:36   - accuracy.csv             (per-index accuracy)
+23:31:36   - accuracy_comparison.png  (bar chart)
+23:31:36   - rank_comparison.png      (box plot)
+23:31:36 ============================================================
+01:38:19 ============================================================
+01:38:19 Phase 3: Full Benchmark — Paper #10 (CBV)
+01:38:19 ============================================================
+01:38:19 
+[1/4] Building datasets...
+01:38:19   Synthetic: 25 datasets
+01:38:19   Real: 5 datasets
+01:38:19   Total: 30 datasets
+01:38:19 
+[2/4] Building indices...
+01:38:19   7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+01:38:19 
+[3/4] Running benchmark...
+01:44:28   Completed in 369.8s
+01:44:28   Datasets: 30
+01:44:28   Results shape: (30, 16)
+01:44:28 
+[4/4] Generating summary...
+01:44:28 
+Accuracy (fraction correct):
+01:44:28          index  accuracy  n_correct  n_total
+ Gap Statistic  0.633333         19       30
+      CH Index  0.533333         16       30
+    Silhouette  0.466667         14       30
+           CBV  0.400000         12       30
+Davies-Bouldin  0.333333         10       30
+    Dunn Index  0.233333          7       30
+     DUD Index  0.000000          0       30
+01:44:28   Accuracy saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\accuracy.csv
+01:44:28 
+Mean rank (1 = best):
+01:44:28 Silhouette        2.033333
+CH Index          2.533333
+Gap Statistic     3.266667
+Davies-Bouldin    4.100000
+CBV               4.133333
+Dunn Index        5.033333
+DUD Index         6.900000
+dtype: float64
+01:44:28 
+Generating plots...
+01:44:29 
+============================================================
+01:44:29 Phase 3 complete. All outputs in: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results
+01:44:29   - benchmark_results.csv   (summary)
+01:44:29   - per_dataset_results.csv  (full detail)
+01:44:29   - accuracy.csv             (per-index accuracy)
+01:44:29   - accuracy_comparison.png  (bar chart)
+01:44:29   - rank_comparison.png      (box plot)
+01:44:29 ============================================================
+01:52:12 ============================================================
+01:52:12 Phase 3: Full Benchmark — Paper #10 (CBV)
+01:52:12 ============================================================
+01:52:12 
+[1/4] Building datasets...
+01:52:12   Synthetic: 25 datasets
+01:52:12   Real: 5 datasets
+01:52:12   Total: 30 datasets
+01:52:12 
+[2/4] Building indices...
+01:52:12   7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+01:52:12 
+[3/4] Running benchmark...
+01:54:20 ============================================================
+01:54:20 Phase 3: Full Benchmark — Paper #10 (CBV)
+01:54:20 ============================================================
+01:54:20 
+[1/4] Building datasets...
+01:54:20   Synthetic: 25 datasets
+01:54:20   Real: 5 datasets
+01:54:20   Total: 30 datasets
+01:54:20 
+[2/4] Building indices...
+01:54:20   7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+01:54:20 
+[3/4] Running benchmark...
+01:59:12   Completed in 292.1s
+01:59:12   Datasets: 30
+01:59:12   Results shape: (30, 16)
+01:59:12 
+[4/4] Generating summary...
+01:59:12 
+Accuracy (fraction correct):
+01:59:12          index  accuracy  n_correct  n_total
+ Gap Statistic  0.633333         19       30
+      CH Index  0.533333         16       30
+    Silhouette  0.466667         14       30
+           CBV  0.433333         13       30
+Davies-Bouldin  0.333333         10       30
+    Dunn Index  0.233333          7       30
+     DUD Index  0.000000          0       30
+01:59:12   Accuracy saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\accuracy.csv
+01:59:12 
+Mean rank (1 = best):
+01:59:12 Silhouette        2.066667
+CH Index          2.533333
+Gap Statistic     3.266667
+CBV               4.033333
+Davies-Bouldin    4.133333
+Dunn Index        5.066667
+DUD Index         6.900000
+dtype: float64
+01:59:12 
+Generating plots...
+01:59:13 
+============================================================
+01:59:13 Phase 3 complete. All outputs in: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results
+01:59:13   - benchmark_results.csv   (summary)
+01:59:13   - per_dataset_results.csv  (full detail)
+01:59:13   - accuracy.csv             (per-index accuracy)
+01:59:13   - accuracy_comparison.png  (bar chart)
+01:59:13   - rank_comparison.png      (box plot)
+01:59:13 ============================================================
+01:59:29   Completed in 436.4s
+01:59:29   Datasets: 30
+01:59:29   Results shape: (30, 16)
+01:59:29 
+[4/4] Generating summary...
+01:59:29 
+Accuracy (fraction correct):
+01:59:29          index  accuracy  n_correct  n_total
+ Gap Statistic  0.633333         19       30
+      CH Index  0.533333         16       30
+    Silhouette  0.466667         14       30
+           CBV  0.433333         13       30
+Davies-Bouldin  0.333333         10       30
+    Dunn Index  0.233333          7       30
+     DUD Index  0.000000          0       30
+01:59:29   Accuracy saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\accuracy.csv
+01:59:29 
+Mean rank (1 = best):
+01:59:29 Silhouette        2.066667
+CH Index          2.533333
+Gap Statistic     3.266667
+CBV               4.033333
+Davies-Bouldin    4.133333
+Dunn Index        5.066667
+DUD Index         6.900000
+dtype: float64
+01:59:29 
+Generating plots...
+01:59:29 
+============================================================
+01:59:29 Phase 3 complete. All outputs in: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results
+01:59:29   - benchmark_results.csv   (summary)
+01:59:29   - per_dataset_results.csv  (full detail)
+01:59:29   - accuracy.csv             (per-index accuracy)
+01:59:29   - accuracy_comparison.png  (bar chart)
+01:59:29   - rank_comparison.png      (box plot)
+01:59:29 ============================================================
+02:45:32 ============================================================
+02:45:32 Phase 3: Full Benchmark — Paper #10 (CBV)
+02:45:32 ============================================================
+02:45:32 
+[1/4] Building datasets...
+02:45:32   Synthetic: 25 datasets
+02:45:33   Real: 6 datasets
+02:45:33   Total: 31 datasets
+02:45:33 
+[2/4] Building indices...
+02:45:33   7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+02:45:33 
+[3/4] Running benchmark (all 7 indices, including DUD)...
+02:49:41   Completed in 248.1s
+02:49:41   Datasets: 31
+02:49:41   Results shape: (31, 16)
+02:49:41 
+[4/4] Generating summary...
+02:49:42 
+Accuracy (fraction correct) — main (DUD excluded, see appendix):
+02:49:42          index  accuracy  n_correct  n_total
+ Gap Statistic  0.645161         20       31
+      CH Index  0.548387         17       31
+    Silhouette  0.451613         14       31
+           CBV  0.451613         14       31
+Davies-Bouldin  0.322581         10       31
+    Dunn Index  0.225806          7       31
+02:49:42   Main accuracy saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\accuracy.csv
+02:49:42   Full accuracy (incl. DUD) saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\accuracy_full.csv
+02:49:42 
+Mean rank (1 = best) — main:
+02:49:42 Silhouette        2.129032
+CH Index          2.483871
+Gap Statistic     3.225806
+CBV               4.000000
+Davies-Bouldin    4.161290
+Dunn Index        5.096774
+dtype: float64
+02:49:42 
+Friedman test (all indices): chi2=106.659, p=0.0000
+02:49:42   → Significant: indices differ in estimated ranks (p < 0.05)
+02:49:42 
+Nemenyi post-hoc p-values (main indices):
+02:49:42   CH Index vs Silhouette: p=0.9952
+02:49:42   CH Index vs Davies-Bouldin: p=0.0363 *
+02:49:42   CH Index vs Gap Statistic: p=0.8270
+02:49:42   CH Index vs Dunn Index: p=0.0000 *
+02:49:42   Davies-Bouldin vs Silhouette: p=0.0040 *
+02:49:42   Davies-Bouldin vs Gap Statistic: p=0.6127
+02:49:42   Davies-Bouldin vs Dunn Index: p=0.6127
+02:49:42   Gap Statistic vs Silhouette: p=0.4153
+02:49:42   Dunn Index vs Silhouette: p=0.0000 *
+02:49:42   Dunn Index vs Gap Statistic: p=0.0116 *
+02:49:42   CBV vs Silhouette: p=0.0116 *
+02:49:42   CBV vs CH Index: p=0.0833
+02:49:42   CBV vs Davies-Bouldin: p=0.9999
+02:49:42   CBV vs Gap Statistic: p=0.7962
+02:49:42   CBV vs Dunn Index: p=0.4153
+02:49:42 
+Generating plots...
+02:49:43   Rank plot saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\rank_comparison.png
+02:49:43 
+============================================================
+02:49:43 Phase 3 complete. All outputs in: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results
+02:49:43   - benchmark_results.csv     (full results, all indices)
+02:49:43   - per_dataset_results.csv    (full detail)
+02:49:43   - accuracy.csv              (main accuracy, DUD excluded)
+02:49:43   - accuracy_full.csv         (full accuracy, incl. DUD)
+02:49:43   - accuracy_comparison.png   (bar chart)
+02:49:43   - rank_comparison.png       (box plot, DUD excluded)
+02:49:43 ============================================================
