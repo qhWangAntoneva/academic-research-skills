@@ -2,7 +2,7 @@
 
 > **Repository**: [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) v3.9.4.1
 > **Framework**: 10 Papers — Critical Bandwidth Analysis Across Disciplines
-> **Session Date**: 2026-05-19
+> **Session Date**: 2026-05-20
 
 ---
 
@@ -30,7 +30,7 @@
 4. **All data sources are publicly available** except LIS, EU-SILC, and UK Biobank (which require applications)
 5. **Directory structure follows ARS conventions**: papers/ for reference docs, shared/ for reusable resources
 
-### File Inventory
+### File Inventory (as of Session #7 final commit `afc24ff`)
 
 ```
 academic-research-skills/
@@ -38,6 +38,7 @@ academic-research-skills/
   10-papers/
     CLAUDE.md                                 ← Project instructions
     handover.md                               ← THIS FILE
+    roadmap-paper10-final.md                  ← Final results roadmap (executed)
     shared/
       research_protocol_template.md           ← Reusable analysis protocol template
       data_access_patterns.md                 ← Data source quick reference
@@ -51,7 +52,19 @@ academic-research-skills/
       paper-07-galaxy-populations.md
       paper-08-biomarker-thresholds.md
       paper-09-latent-attitude-profiles.md
-      paper-10-cluster-validation.md
+      paper-10-cluster-validation.md          ← [FINAL RESULTS INCLUDED]
+    scripts/paper-10/                         ← All Paper #10 implementation code
+      cbv/           (CBVIndex, CBVSpectral, CBVHybrid)
+      benchmark/     (SyntheticDataGenerator, RealDataLoader, BenchmarkRunner)
+      comparison/    (6 CVI wrappers + factory)
+      utils/         (weighting, k_selection, preprocessing)
+      run_benchmark.py                        ← Main benchmark entry point
+      results/                                ← All output CSVs + plots
+        accuracy.csv                          ← Main accuracy (DUD excluded)
+        accuracy_full.csv                     ← Full accuracy (incl. DUD)
+        per_dataset_results.csv               ← Per-dataset detail (31×16)
+        accuracy_comparison.png               ← Bar chart
+        rank_comparison.png                   ← Box plot
 ```
 
 ### What Each Paper Reference Doc Contains
@@ -67,11 +80,10 @@ Each `paper-XX.md` includes:
 ### Git Status
 
 ```
-?? 10-papers-framework.md
-?? 10-papers/
+✔ All committed. Latest: afc24ff "feat(paper-10): final CBV benchmark results"
 ```
 
-Both the framework file and the `10-papers/` directory are untracked. Should be added and committed in the next session.
+Branch: `main`. Clean working tree, no untracked files.
 
 ---
 
@@ -199,4 +211,51 @@ For whatever paper is chosen:
 
 ---
 
-*End of handover — the next session should start by reading this file and deciding which paper to execute.*
+## Handover to Phase 4 — Manuscript Draft (Paper #10 CBV)
+
+### Status: Ready for Writing
+
+All prior phases are **100% complete**:
+- [x] Phase 0: Configuration — thesis crystallized, chapter structure planned
+- [x] Phase 1: Literature search — 26 references across 2 tracks identified
+- [x] Phase 2: Architecture — CBVIndex, CBVSpectral, CBVHybrid classes + benchmark framework implemented
+- [x] Phase 3: Implementation + Benchmarking — final results ready (31 datasets, 248.1s)
+- [ ] **Phase 4: Manuscript Draft** ← NEXT
+
+### Critical Context for Phase 4
+
+**Thesis:**
+CBV is the first systematic application of Silverman's critical bandwidth theory to internal cluster validation. Existing CVIs answer "which k scores best?" (geometric optimization); CBV answers "how many natural groups does the data support?" (statistical inference via modality testing).
+
+**Key results to report:**
+- CBV 45.2% (14/31) — tied 3rd/6 with Silhouette, ahead of Davies-Bouldin and Dunn
+- Friedman test: chi²=106.66, p<0.0001 — significant differences confirmed
+- 6 failure categories documented (non-convex, high-k under, noise dims, etc.)
+- DUD Index excluded from main ranking (monotonic, not designed for k-estimation)
+- Excess mass layer implemented but computationally expensive; noted as future work
+
+**Chapter structure (from Session #2 plan mode):**
+1. Introduction — the gap between geometric CVI and statistical inference
+2. Literature Review — Track A (CVIs) + Track B (modality testing) → research gap
+3. Methodology — CBV definition, per-dimension voting, spectral fusion, hybrid aggregation
+4. Benchmark Design — 31 datasets, 7 indices, evaluation protocol
+5. Results — accuracy table, ranking, Friedman/Nemenyi, failure analysis
+6. Discussion — implications, limitations, excess mass future work
+7. Conclusion — summary + contribution
+
+**Invocation command:**
+```sh
+# Use academic-paper full mode with the reference doc as input:
+/ars-full
+# Input: 10-papers/papers/paper-10-cluster-validation.md
+```
+
+**Data files for figures/tables:**
+- `10-papers/scripts/paper-10/results/accuracy.csv` — main accuracy table
+- `10-papers/scripts/paper-10/results/per_dataset_results.csv` — full per-dataset detail
+- `10-papers/scripts/paper-10/results/accuracy_comparison.png` — bar chart
+- `10-papers/scripts/paper-10/results/rank_comparison.png` — box plot
+
+---
+
+*End of handover — Phase 4 (Manuscript Draft) is the next step for Paper #10.*
