@@ -43,8 +43,9 @@ class CBVHybrid:
         Random seed for reproducibility.
     h_crit_tolerance : float, default=1.1
         Multiplier on the Silverman bandwidth threshold.
-    fast : bool, default=False
-        If True, use fast mode (skip CI and Silverman test).
+    mode : str, default='threshold'
+        Operating mode: ``'threshold'`` (fast heuristic, no p-values) or
+        ``'bootstrap'`` (full Silverman test with p-values).
     vote_method : str, default='mode'
         Aggregation method used internally by each sub-estimator.
     n_components : int, default=10
@@ -106,7 +107,7 @@ class CBVHybrid:
         alpha: float = 0.05,
         random_state: Optional[int] = None,
         h_crit_tolerance: float = 1.1,
-        fast: bool = False,
+        mode: str = "threshold",
         vote_method: str = "mode",
         n_components: int = 10,
         affinity: str = "nearest_neighbors",
@@ -123,7 +124,7 @@ class CBVHybrid:
         self.alpha = alpha
         self.random_state = random_state
         self.h_crit_tolerance = h_crit_tolerance
-        self.fast = fast
+        self.mode = mode
         self.vote_method = vote_method
         self.n_components = n_components
         self.affinity = affinity
@@ -179,7 +180,7 @@ class CBVHybrid:
             alpha=self.alpha,
             random_state=self.random_state,
             h_crit_tolerance=hct,
-            fast=self.fast,
+            mode=self.mode,
             vote_method=self.vote_method,
         )
         self.raw_index_.fit(X_fit)
@@ -194,7 +195,7 @@ class CBVHybrid:
             alpha=self.alpha,
             random_state=self.random_state,
             h_crit_tolerance=hct,
-            fast=self.fast,
+            mode=self.mode,
             vote_method=self.vote_method,
             n_components=self.n_components,
             affinity=self.affinity,

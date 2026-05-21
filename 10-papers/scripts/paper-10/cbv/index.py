@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from typing import Optional, Tuple
 
 import numpy as np
@@ -26,6 +27,7 @@ class CBVIndex:
         Range of candidate k values to test.
     n_boot : int, default=999
         Number of bootstrap resamples for Silverman test.
+        Only used when ``mode='bootstrap'``.
     alpha : float, default=0.05
         Significance level for the Silverman test.
     random_state : int or None, default=None
@@ -34,11 +36,22 @@ class CBVIndex:
         Multiplier on the Silverman bandwidth threshold. A value >1.0
         relaxes ``h_crit < tolerance * h_silver``, reducing false
         negatives when h_crit at the true k is slightly above h_silver.
-    fast : bool, default=False
-        If True, skip confidence-interval computation on
-        ``critical_bandwidth`` and skip the Silverman test.
-        Use for exploratory/benchmarking runs; use ``fast=False``
-        for publication-quality results.
+    mode : str, default='bootstrap'
+        Operating mode for per-dimension mode detection.
+
+        - ``'bootstrap'``: Full Silverman's bootstrap test (Silverman, 1981).
+          Computes p-values via resampling from a calibrated null density.
+          Provides Type I error control. **This is the proper statistical test.**
+
+        - ``'threshold'``: Fast heuristic using a fixed threshold
+          ``h_crit < tolerance * h_silver``. **This is NOT Silverman's test.**
+          It provides no p-value and no Type I error control.
+          Use for exploratory/benchmarking runs only.
+
+    fast : bool, default=None
+        Deprecated since v0.3.0. Use ``mode='threshold'`` instead.
+        If ``True``, equivalent to ``mode='threshold'``.
+        If ``False``, equivalent to ``mode='bootstrap'``.
     vote_method : str, default='weighted_mean'
         Aggregation method for per-dimension k votes.
         One of ``'weighted_mean'``, ``'median'``, ``'mode'``.
@@ -52,24 +65,49 @@ class CBVIndex:
         alpha: float = 0.05,
         random_state: Optional[int] = None,
         h_crit_tolerance: float = 1.1,
-        fast: bool = False,
+        mode: str = "bootstrap",
+        fast: Optional[bool] = None,
         vote_method: str = "weighted_mean",
     ) -> None:
         if k_range[0] < 2:
             raise ValueError("k_range[0] must be >= 2")
         if k_range[1] <= k_range[0]:
             raise ValueError("k_range[1] must be > k_range[0]")
+
+        # Handle deprecated fast parameter
+        if fast is not None:
+            warnings.warn(
+                "`fast` is deprecated since v0.3.0. Use `mode='threshold'` instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self._mode = "threshold" if fast else "bootstrap"
+        else:
+            self._mode = mode
+
+        if self._mode not in ("bootstrap", "threshold"):
+            raise ValueError(f"mode must be 'bootstrap' or 'threshold', got '{mode}'")
+
         self.k_range = k_range
         self.n_boot = n_boot
         self.alpha = alpha
         self.random_state = random_state
         self.h_crit_tolerance = h_crit_tolerance
-        self.fast = fast
         self.vote_method = vote_method
         self.k_hat_: Optional[int] = None
         self.dimension_votes_: Optional[np.ndarray] = None
         self.dimension_weights_: Optional[np.ndarray] = None
         self.p_values_: Optional[np.ndarray] = None
+
+    @property
+    def fast(self) -> bool:
+        """Deprecated: use mode instead."""
+        return self._mode == "threshold"
+
+    @property
+    def mode(self) -> str:
+        """Current operating mode."""
+        return self._mode
 
     def fit(self, X: np.ndarray) -> "CBVIndex":
         """
@@ -92,6 +130,8 @@ class CBVIndex:
         if n_features < 1:
             raise ValueError("X must have at least 1 feature")
 
+        is_threshold = (self._mode == "threshold")
+
         k_min, k_max = self.k_range
         votes = np.full(n_features, fill_value=k_min, dtype=np.float64)
         weights = np.zeros(n_features, dtype=np.float64)
@@ -110,9 +150,9 @@ class CBVIndex:
             h_silver = silverman_bandwidth(x_d)
 
             for k in range(k_min, k_max + 1):
-                result = critical_bandwidth(x_d, k=k, return_ci=not self.fast)
+                result = critical_bandwidth(x_d, k=k, return_ci=not is_threshold)
                 h_crit = result[0] if isinstance(result, tuple) else result
-                converged = result[1] if isinstance(result, tuple) else (not self.fast)
+                converged = result[1] if isinstance(result, tuple) else True
 
                 if converged and np.isfinite(h_crit) and h_crit < self.h_crit_tolerance * h_silver:
                     votes[d] = float(k)
@@ -127,7 +167,8 @@ class CBVIndex:
                 weights[d] = 0.0
 
             # Silverman test p-value (H0: data has at most k_min modes)
-            if not self.fast:
+            # Only computed in bootstrap mode — threshold mode is heuristic only
+            if not is_threshold:
                 try:
                     st = silverman_test(
                         x_d,

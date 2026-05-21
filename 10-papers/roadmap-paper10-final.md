@@ -1,92 +1,113 @@
-# Paper #10 — Final Results Roadmap
+# Paper #10 — Revision Roadmap (Phase A-F)
 
-> 方法论审查后待办事项清单（优先级排序）
-
----
-
-## P0：必须完成（最终结果质量）
-
-### P0-1：添加统计显著性检验
-- **问题**：当前仅计算准确率和平均排名，无 Friedman 检验 / Nemenyi 事后检验
-- **方案**：在 `benchmark/runner.py` 的 `summarize_results()` 中添加：
-  - `scipy.stats.friedmanchisquare()` — 检验各指标间是否有显著差异
-  - `scikit-posthocs.posthoc_nemenyi_friedman()` — 若显著则进行事后两两比较
-  - 输出 Friedman p 值 + Nemenyi 临界差图数据
-- **影响**：为 CBV 排名第 4 位提供统计支持，判断其与 Gap/CH 的差距是否显著
-- **依赖**：需要 `scikit-posthocs` 包（`pip install scikit-posthocs`）
-
-### P0-2：DUD Index 问题处理
-- **问题**：DUD 始终选择 k=10（搜索范围上限），准确率 0%，因为其得分随 k 单调递增
-- **方案**：在论文中说明 DUD Index 是为**固定 k 下的聚类比较**设计的（而非 k 估计），将其从主要排名中剔除，放入附录作为参考
-- **任务**：
-  - 修改 `run_benchmark.py`：在正式基准中排除 DUD
-  - 可选：在附录中单独报告 DUD 的表现
-- **影响**：CBV 排名方法从 4/7 → 4/6（去掉 DUD 不会改变其他指标的相对位置）
-
-### P0-3：添加 Seeds 数据集
-- **描述**：UCI Seeds 数据集（210×7, k=3），加载器已实现但被排除
-- **方案**：在 `benchmark/real_data.py` 中启用 `include_seeds=True` 或修改 `load_all()` 方式
-- **影响**：真实数据集从 5 个 → 6 个
-
-### P0-4：Benchmark 重跑
-- **描述**：在完成上述三项 P0 后，重新运行完整基准测试
-- **方案**：`cd 10-papers/scripts/paper-10 && uv run python run_benchmark.py`
-- **预计时间**：~7-8 分钟（436s）
-
-### P0-5：可复现性确认
-- **问题**：确认 random_state 是否传导至所有随机组件
-- **检查结果**：✅ CBVSpectral 已将 `random_state` 传递给 `SpectralEmbedding`（第 92 行），也传递给 `CBVIndex`（第 78 行）
-- **结论**：无需改动
+> **Status**: Phase A complete (Quick Credibility Wins)
+> **Next**: Phase B (Methodology Hardening) — P1-1 tolerance calibration, P1-2 multimodal weight
 
 ---
 
-## P1：重要优化（论文完整性）
+## ✅ 已完成 (Preliminary Pipeline)
 
-### P1-1：超额质量（Excess Mass）层优化
-- **问题**：`use_excess_mass=True` 在 benchmark 中无效（当前设置为 False）
-- **发现**：`excess_mass()` 在 `n_boot=0` 时始终返回 `n_modes=1`（点估计无法区分多模态），需要 `n_boot>=50` 才有效，但会引入 ~45000 次额外 bootstrap 调用
-- **方案**：
-  1. 论文中将 excess mass 标注为"已实现但计算成本高，留作未来优化"
-  2. 可选：在附录中展示小规模验证（在 3-5 个数据集上用 n_boot=50 测试高 k 场景的改善效果）
-- **影响**：不影响最终 benchmark 结果，仅影响论文叙述
+| Phase | Key Result | Status |
+|:-----:|------------|:------:|
+| 0-5 | Full pipeline: research → architecture → benchmark (~45%) → manuscript → citation check → abstracts | Done |
+| 6 | Peer review: EIC Major Revision, Chacón 5/10, Arbelaitz 6/10, Hennig 7/10, DA 2 CRITICAL | Done |
+| A | Quick credibility: `mode` rename, `n_init=10`, multi-seed (5), MAE/±1/ARI metrics | **Done** |
 
-### P1-2：失败模式文档化
-- **描述**：6 类失败模式需要系统记录到论文中
-- **任务**：
-  - 合成数据：按类别分类失败数据集
-  - 每类给出 1 个典型案例解释
-  - 非凸形状（moons/circles）：CBV → 始终得 k=3，Gap 正确但 Silhouette/CH/DB 也失败
-  - 高 k 低估（k≥5）：CBV 在 k=3-4 卡住
-  - 记录为论文 §Results / §Discussion 内容
-- **文件**：`10-papers/papers/paper-10-cluster-validation.md`
+### Final Pre-Revision Benchmark (Single Seed)
+- 31 datasets (25 synthetic + 6 real), 7 CV indices, k=(2,10), threshold mode
+- CBV: 45.2% (14/31), tied 3rd/6 with Silhouette
+- Friedman chi²=106.66, p<0.0001; CBV vs Silhouette Nemenyi p=0.0116*
+
+### Multi-Seed Benchmark (Post-Phase A)
+- 5 seeds [42, 73, 123, 256, 999], mean ± std across all metrics
+- CBV: 43.9% ± 2.9% accuracy, **MAE=0.79** (best), **±1 Acc=87.1%** (best), ARI=0.593
 
 ---
 
-## P2：文档与提交
+## Revision Plan (from Peer Review Results)
 
-### P2-1：更新 Paper 参考文档
-- **内容**：
-  - 替换 §Next Steps 为最终状态（所有步骤完成）
-  - 添加最终实验结果（accuracy table + ranking + failure analysis）
-  - 添加统计检验结果
-  - 更新论文贡献声明：CBV 准确率 43.3%，排名 4/6
+### Phase A: Quick Credibility Wins ✅
 
-### P2-2：更新 handover.md
-- **内容**：记录本次方法论审查 + 最终结果确认
+| # | Item | Status | Files Touched |
+|---|------|:------:|:-------------:|
+| P0-5 | `n_init=3` → `n_init=10` | ✅ Done | `comparison/indices.py` |
+| P0-1 | `fast` → `mode` (threshold/bootstrap) | ✅ Done | `cbv/index.py`, `spectral.py`, `hybrid.py` |
+| P0-3 | Add MAE, ±1 Acc, ARI | ✅ Done | `run_benchmark.py` |
+| P0-2 | Multi-seed [42,73,123,256,999] | ✅ Done | `run_benchmark.py` |
 
-### P2-3：Git 提交
-- **提交内容**：
-  - `10-papers-framework.md`
-  - `10-papers/` 整个目录（所有代码、结果、文档）
-  - 包含准确的提交信息
+### Phase B: Methodology Hardening ← NEXT
+
+| # | Item | Effort | Priority | Depends On |
+|---|------|:------:|:--------:|:----------:|
+| P1-1 | Adaptive tolerance empirical calibration | 7h | High | — |
+| P1-2 | Bimodality weighting → multimodal weight | 5h | High | — |
+| P1-10 | Weighting scheme sensitivity analysis | 1h | Medium | P1-2 |
+
+**Inputs needed**: `cbv/index.py`, `cbv/hybrid.py`, `run_benchmark.py`
+
+### Phase C: Benchmark Expansion
+
+| # | Item | Effort | Priority | Depends On |
+|---|------|:------:|:--------:|:----------:|
+| P1-4 | New competing indices (Hartigan, KL, etc.) | 5h | High | — |
+| P1-5 | Expand synthetic benchmark (+19 datasets) | 3h | Medium | — |
+| P1-6 | Expand real benchmark (+9 datasets) | 3h | Medium | — |
+| P1-7 | Expand complementarity analysis | 3h | Medium | Phase B |
+
+### Phase D: Advanced Features
+
+| # | Item | Effort | Priority | Depends On |
+|---|------|:------:|:--------:|:----------:|
+| P0-6 | Correlated-dimension ablation study | 2h | **P0** | — |
+| P1-3 | Sheather-Jones bandwidth option | 3h | High | Phase B |
+| P1-8 | CBV with random 2D projections | 5h | Medium | Phase B |
+| P1-9 | CBVHybrid spectral component spec | 0.5h | Low | Phase B |
+
+### Phase E: Full Benchmark + Analysis
+
+| # | Item | Effort | Priority |
+|---|------|:------:|:--------:|
+| — | Full multi-seed benchmark run | ~90min | — |
+| P2-4 | k-range expansion analysis | 1h | Low |
+| — | Final accuracy tables, complementarity figures | — | — |
+
+### Phase F: Manuscript Revision
+
+| # | Section | Effort | Priority |
+|---|---------|:------:|:--------:|
+| — | Abstract rewrite | 2h | **P0** |
+| — | §1 Introduction reframe | 4h | **P0** |
+| — | §2 Related Work corrections | 4h | **P0** |
+| — | §3 Methodology restructure (9-subsection) | 8h | **P0** |
+| — | §5 Results restructure (disagreement headline) | 8h | **P0** |
+| — | §6 Discussion revision (failure classification) | 6h | **P0** |
+| — | §7 Conclusion rewrite | 2h | **P0** |
+| — | Re-review cycle (max 2 rounds) | 6h | **P0** |
 
 ---
 
-## 执行顺序
+## Execution Order
 
 ```
-P0-1 (统计检验) ─┐
-P0-2 (DUD处理)   ├→ P0-4 (重跑基准) → P1-2 (失败分析) → P2-1 (论文doc) → P2-2 (handover) → P2-3 (提交)
-P0-3 (Seeds)    ┘     │
-                      P1-1 (excess mass doc)
+Phase A (Quick Wins)    ← DONE
+     ↓
+Phase B (Methodology)   ← NEXT
+     ↓
+Phase C (Benchmark)     ← parallel with D
+Phase D (Advanced Feat.) ← parallel with C
+     ↓
+Phase E (Full Run)      ← after C+D
+     ↓
+Phase F (Manuscript)    ← final, uses all outputs
 ```
+
+## Key Results to Carry Forward
+
+**Core narrative**: CBV is not the best at exact match (43.9%), but has the **lowest MAE (0.79)** and **highest ±1 accuracy (87.1%)** — supporting "diagnostic complementarity" thesis.
+
+**Failure modes** (target for Phase B/C fixes):
+- Non-convex shapes: 6 failures (spectral fusion helps but not fully)
+- High-k underestimation (k≥5): 5 failures (excess_mass layer, target)
+- Tight-blob overestimation: 2 failures (tolerance calibration, P1-1)
+- Noise dimension overwhlem: 2 failures (dim pre-filtering exists but may need tuning)
+- Real dataset signal loss: 2 failures (addressed by Phase C expansion)

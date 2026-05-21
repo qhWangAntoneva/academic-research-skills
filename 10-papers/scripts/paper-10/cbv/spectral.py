@@ -32,7 +32,7 @@ class CBVSpectral(CBVIndex):
         alpha: float = 0.05,
         random_state: Optional[int] = None,
         h_crit_tolerance: float = 1.1,
-        fast: bool = False,
+        mode: str = "threshold",
         vote_method: str = "weighted_mean",
         n_components: int = 10,
         affinity: str = "nearest_neighbors",
@@ -43,7 +43,7 @@ class CBVSpectral(CBVIndex):
             alpha=alpha,
             random_state=random_state,
             h_crit_tolerance=h_crit_tolerance,
-            fast=fast,
+            mode=mode,
             vote_method=vote_method,
         )
         self.n_components = n_components
@@ -77,7 +77,7 @@ class CBVSpectral(CBVIndex):
             alpha=self.alpha,
             random_state=self.random_state,
             h_crit_tolerance=self.h_crit_tolerance,
-            fast=self.fast,
+            mode=self.mode,
             vote_method=self.vote_method,
         )
         raw_estimator.fit(X)

@@ -19,6 +19,10 @@ from sklearn.metrics import (
     silhouette_score,
 )
 
+# All KMeans-based CVIs use n_init=10 for reliable convergence
+# (sklearn default since v0.23). CBV is KMeans-free and unaffected.
+KMEANS_N_INIT = 10
+
 
 # ---------------------------------------------------------------------------
 # a. Silhouette Index
@@ -47,7 +51,7 @@ def silhouette_cvi(
     for k in range(k_min, k_max + 1):
         if k >= X.shape[0]:
             continue
-        labels = KMeans(n_clusters=k, n_init=3, random_state=random_state).fit_predict(X)
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
         unique = len(set(labels))
         if unique < 2:
             continue
@@ -88,7 +92,7 @@ def ch_cvi(
     for k in range(k_min, k_max + 1):
         if k >= X.shape[0]:
             continue
-        labels = KMeans(n_clusters=k, n_init=3, random_state=random_state).fit_predict(X)
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
         unique = len(set(labels))
         if unique < 2:
             continue
@@ -129,7 +133,7 @@ def db_cvi(
     for k in range(k_min, k_max + 1):
         if k >= X.shape[0]:
             continue
-        labels = KMeans(n_clusters=k, n_init=3, random_state=random_state).fit_predict(X)
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
         unique = len(set(labels))
         if unique < 2:
             continue
@@ -200,7 +204,7 @@ def gap_cvi(
         if k >= n:
             continue
 
-        labels = KMeans(n_clusters=k, n_init=3, random_state=random_state).fit_predict(X)
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
         log_Wk = np.log(_within_cluster_dispersion(X, labels))
         log_Wks.append(log_Wk)
 
@@ -212,7 +216,7 @@ def gap_cvi(
                 high=X.max(axis=0),
                 size=(n, d),
             )
-            ref_labels = KMeans(n_clusters=k, n_init=3, random_state=random_state).fit_predict(X_ref)
+            ref_labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X_ref)
             if len(set(ref_labels)) < 2:
                 ref_log_W[b] = 0.0
             else:
@@ -340,7 +344,7 @@ def dunn_cvi(
     for k in range(k_min, k_max + 1):
         if k >= X.shape[0]:
             continue
-        labels = KMeans(n_clusters=k, n_init=3, random_state=random_state).fit_predict(X)
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
         unique = len(set(labels))
         if unique < 2:
             continue
@@ -386,7 +390,7 @@ def dud_cvi(
     for k in range(k_min, k_max + 1):
         if k >= n:
             continue
-        labels = KMeans(n_clusters=k, n_init=3, random_state=random_state).fit_predict(X)
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
         unique = len(set(labels))
         if unique < 2:
             continue

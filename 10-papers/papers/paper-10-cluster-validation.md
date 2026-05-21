@@ -85,31 +85,30 @@ Can the critical bandwidth of feature distributions serve as a theoretically gro
 **Benchmark Configuration:**
 - 31 datasets (25 synthetic + 6 real: wine, iris, digits[0,1], digits[0,1,2], breast cancer, seeds)
 - 7 CV indices: Silhouette, CH Index, Davies-Bouldin, Gap Statistic, Dunn Index, DUD Index, CBV (CBVHybrid)
-- k range: (2, 10), fast mode (n_boot=10), random_state=42
-- Runtime: 248.1s (parallel, n_jobs=-1)
+- k range: (2, 10), threshold mode (n_boot=10)
+- Multi-seed protocol: [42, 73, 123, 256, 999] — mean ± std reported
+- Metrics: Exact-match accuracy, MAE, ±1 accuracy, ARI
+- Runtime: ~1500s (5 seeds, parallel n_jobs=-1)
 
-**Main Accuracy (DUD Index excluded — not designed for k-estimation):**
+**Multi-Seed, Multi-Metric Results (mean ± std across 5 seeds):**
 
-| Rank | Index | Accuracy | Correct/Total |
-|:---:|-------|:--------:|:------------:|
-| 1 | Gap Statistic | 64.5% | 20/31 |
-| 2 | CH Index | 54.8% | 17/31 |
-| 3 | **CBV** | **45.2%** | **14/31** |
-| 3 | Silhouette | 45.2% | 14/31 |
-| 5 | Davies-Bouldin | 32.3% | 10/31 |
-| 6 | Dunn Index | 22.6% | 7/31 |
+| Index | Accuracy | MAE | ±1 Acc | ARI |
+|-------|:--------:|:---:|:------:|:---:|
+| Gap Statistic | 60.6% ± 3.5% | 1.10 ± 0.03 | 73.5% ± 1.4% | 0.607 ± 0.003 |
+| CH Index | 54.8% ± 0.0% | 1.94 ± 0.09 | 74.2% ± 0.0% | 0.645 ± 0.003 |
+| Silhouette | 45.8% ± 1.4% | 1.64 ± 0.12 | 65.2% ± 1.4% | 0.643 ± 0.006 |
+| **CBV** | **43.9% ± 2.9%** | **0.79 ± 0.02** | **87.1% ± 0.0%** | **0.593 ± 0.011** |
+| Davies-Bouldin | 32.3% ± 0.0% | 3.05 ± 0.17 | 51.6% ± 0.0% | 0.565 ± 0.002 |
+| Dunn Index | 24.5% ± 1.8% | 2.70 ± 0.17 | 42.6% ± 1.4% | 0.512 ± 0.012 |
 
-**Statistical Significance:**
-- Friedman test: chi²=106.66, p<0.0001 — indices differ significantly
-- Nemenyi post-hoc: CBV vs Silhouette: p=0.0116* (significant), CBV vs CH Index: p=0.0833 (trending)
+**Key Findings:**
+- CBV achieves the **lowest MAE (0.79)** — when it misses k, it misses by less than any other index
+- CBV achieves the **highest ±1 accuracy (87.1%)** — 13 points above the next best (CH at 74.2%)
+- Exact-match accuracy (43.9%) is mid-pack but highly stable across seeds (std 2.9%)
+- ARI (0.593) is competitive, trailing CH (0.645) and Silhouette (0.643)
 
-**Mean Rank (lower is better):**
-1. Silhouette: 2.13
-2. CH Index: 2.48
-3. Gap Statistic: 3.23
-4. CBV: 4.00
-5. Davies-Bouldin: 4.16
-6. Dunn Index: 5.10
+**Statistical Significance (last seed reference):**
+- Friedman test: chi²=101.60, p<0.0001 — indices differ significantly
 
 **CBV Failure Categories (17/31 incorrect):**
 - Non-convex shapes (moons, circles): CBV finds k=3 instead of k=2 — 6 failures
@@ -120,17 +119,19 @@ Can the critical bandwidth of feature distributions serve as a theoretically gro
 
 **Excess Mass Layer:** Implemented but requires n_boot≥50 for effective mode-counting; computationally prohibitive at full benchmark scale. Noted as future optimization.
 
-### 8. Next Steps
+### 8. Revision Status (Post-Peer Review)
 
-- [x] Phase 0: Configuration
-- [x] Phase 1: Literature search (26 references identified, see §6)
-- [x] **Phase 2: Architecture** — CBV Python class design + benchmark framework
-  - [x] CBVIndex class (sklearn-compatible API)
-  - [x] Core per-dimension k voting + bimodality weighting
-  - [x] CBV-Spectral variant
-  - [x] k selection: Sequential Silverman (primary) + elbow scan (validation)
-  - [x] Benchmark runner (synthetic + UCI)
-  - [x] Comparison wrappers (silhouette, CH, DB, gap, Dunn, DUD)
-  - [x] Report generation (tables + figures)
-- [x] Phase 3: Implementation + testing (final benchmark: 31 datasets, 248.1s, CBV 45.2%)
-- [ ] **Phase 4: Manuscript draft** (academic-paper full mode)
+The manuscript underwent a 5-reviewer panel peer review (2026-05-21) and received **Major Revision**. The full review is at `results/paper-10-peer-review-2026-05-21.md`. The revision proceeds through 6 phases:
+
+| Phase | Description | Hours | Status |
+|:-----:|-------------|:-----:|:------:|
+| **A** | Quick Credibility Wins (mode rename, n_init, metrics, seeds) | 7.5 | ✅ Done |
+| **B** | Methodology Hardening (tolerance calibration, multimodal weight) | 12 | **← Next** |
+| **C** | Benchmark Expansion (new indices, more datasets) | 11 | Pending |
+| **D** | Advanced Features (correlated ablation, SJ bandwidth, 2D proj) | 8 | Pending |
+| **E** | Full Multi-Seed Benchmark | 4 | Pending |
+| **F** | Manuscript Revision (narrative restructure, all sections) | 60+ | Pending |
+
+**LaTeX conversion** (original Phase 7) deferred until after revision is accepted.
+
+See `../roadmap-paper10-final.md` and `../handover.md` for detailed status.

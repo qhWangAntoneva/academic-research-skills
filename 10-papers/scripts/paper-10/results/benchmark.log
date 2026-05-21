@@ -269,3 +269,83 @@ Generating plots...
 02:49:43   - accuracy_comparison.png   (bar chart)
 02:49:43   - rank_comparison.png       (box plot, DUD excluded)
 02:49:43 ============================================================
+00:34:27 ============================================================
+00:34:27 Phase 3: Full Benchmark — Paper #10 (CBV) — Multi-Seed + Multi-Metric
+00:34:27 ============================================================
+00:34:27 
+[1/4] Building datasets...
+00:34:27   Synthetic: 25 datasets
+00:34:29   Real: 6 datasets
+00:34:29   Total: 31 datasets
+00:34:29 
+[2/4] Building indices...
+00:34:29 
+[3/4] Running benchmark across seeds: [42, 73, 123, 256, 999]
+00:34:29 
+  Seed 42...
+00:34:29     7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+00:39:32     Results shape: (31, 16)
+00:39:32 
+  Seed 73...
+00:39:32     7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+00:44:28     Results shape: (31, 16)
+00:44:28 
+  Seed 123...
+00:44:28     7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+00:49:28     Results shape: (31, 16)
+00:49:28 
+  Seed 256...
+00:49:28     7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+00:54:22     Results shape: (31, 16)
+00:54:22 
+  Seed 999...
+00:54:22     7 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'CBV']
+00:59:15     Results shape: (31, 16)
+00:59:15 
+  All seeds completed in 1486.1s
+00:59:15 
+[4/4] Computing metrics across seeds...
+00:59:43 
+Multi-seed metrics (mean ± std across 5 seeds):
+00:59:43          index  accuracy_mean  accuracy_std  mae_mean  mae_std  acc_plus1_mean  acc_plus1_std  ari_mean  ari_std
+ Gap Statistic       0.606452      0.035337  1.103226 0.026989        0.735484   1.442625e-02  0.606710 0.003298
+      CH Index       0.548387      0.000000  1.935484 0.091240        0.741935   0.000000e+00  0.645054 0.002714
+    Silhouette       0.458065      0.014426  1.638710 0.117199        0.651613   1.442625e-02  0.643354 0.006046
+           CBV       0.438710      0.028852  0.787097 0.017668        0.870968   1.241267e-16  0.592882 0.011368
+Davies-Bouldin       0.322581      0.000000  3.045161 0.170083        0.516129   0.000000e+00  0.564524 0.002162
+    Dunn Index       0.245161      0.017668  2.696774 0.174611        0.425806   1.442625e-02  0.511562 0.011902
+00:59:43 
+  Multi-seed metrics saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\metrics_multi_seed.csv
+00:59:43 
+Per-seed accuracy:
+00:59:43  seed  Silhouette  CH Index  Davies-Bouldin  Gap Statistic  Dunn Index      CBV
+   42    0.483871  0.548387        0.322581       0.645161    0.225806 0.451613
+   73    0.451613  0.548387        0.322581       0.612903    0.258065 0.451613
+  123    0.451613  0.548387        0.322581       0.548387    0.258065 0.451613
+  256    0.451613  0.548387        0.322581       0.612903    0.225806 0.451613
+  999    0.451613  0.548387        0.322581       0.612903    0.258065 0.387097
+00:59:43 
+Mean rank (1 = best) — last seed reference:
+00:59:43 Silhouette        2.193548
+CH Index          2.548387
+Gap Statistic     3.258065
+Davies-Bouldin    4.064516
+CBV               4.064516
+Dunn Index        4.967742
+dtype: float64
+00:59:43 
+Friedman test: chi2=101.599, p=0.0000
+00:59:43   → Significant (p < 0.05)
+00:59:43 
+Generating plots (last seed)...
+00:59:43 
+============================================================
+00:59:43 Phase 3 complete. All outputs in: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results
+00:59:43   - metrics_multi_seed.csv     (mean±std across 5 seeds)
+00:59:43   - accuracy_per_seed.csv      (per-seed accuracy breakdown)
+00:59:43   - results_seed_*.csv         (per-seed raw results)
+00:59:43   - benchmark_results.csv      (combined results)
+00:59:43   - per_dataset_results.csv    (full detail)
+00:59:43   - accuracy_comparison.png    (bar chart)
+00:59:43   - rank_comparison.png        (box plot)
+00:59:43 ============================================================

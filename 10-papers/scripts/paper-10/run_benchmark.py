@@ -2,6 +2,8 @@
 Phase 3: Full Benchmark — Paper #10 (CBV)
 
 Runs all 7 CV indices on 25+ synthetic + 5 real-world datasets.
+Multi-seed protocol: [42, 73, 123, 256, 999] (P0-2).
+Multi-metric evaluation: accuracy, MAE, ±1 accuracy, ARI (P0-3).
 Saves results CSV + accuracy/rank plots to results/ directory.
 """
 import sys, os, warnings, time
@@ -13,9 +15,13 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
+from sklearn.cluster import KMeans
+from sklearn.metrics import adjusted_rand_score
+
 from cbv import CBVHybrid
 from benchmark import SyntheticDataGenerator, RealDataLoader, BenchmarkRunner
 from comparison import get_all_indices
+from comparison.indices import KMEANS_N_INIT
 
 RESULTS_DIR = Path(__file__).parent / 'results'
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -28,7 +34,7 @@ def log(msg):
     print(msg, flush=True)
 
 log('=' * 60)
-log('Phase 3: Full Benchmark — Paper #10 (CBV)')
+log('Phase 3: Full Benchmark — Paper #10 (CBV) — Multi-Seed + Multi-Metric')
 log('=' * 60)
 
 # ── 1. Build datasets ──
@@ -38,7 +44,7 @@ synthetic_suite = gen.generate_benchmark_suite()
 log(f'  Synthetic: {len(synthetic_suite)} datasets')
 
 loader = RealDataLoader()
-real_suite = loader.load_all(include_seeds=True)  # Seeds now enabled
+real_suite = loader.load_all(include_seeds=True)
 log(f'  Real: {len(real_suite)} datasets')
 
 all_datasets = synthetic_suite + real_suite
@@ -47,162 +53,221 @@ log(f'  Total: {len(all_datasets)} datasets')
 # ── 2. Build indices ──
 log('\n[2/4] Building indices...')
 K_RANGE = (2, 10)
-N_BOOT = 10  # fast mode for benchmark; use 999 for publication
+N_BOOT = 10  # threshold mode for benchmark; use bootstrap with 999 for publication
+SEEDS = [42, 73, 123, 256, 999]
+N_SEEDS = len(SEEDS)
 
-indices = get_all_indices(k_range=K_RANGE, random_state=42)
-
-# Add CBVHybrid (replaces standalone CBVIndex — spectral fusion improves CBV accuracy)
 class CBVAdapter:
     def __init__(self, k_range=K_RANGE, n_boot=N_BOOT, random_state=42):
         self.name = 'CBV'
-        self.idx = CBVHybrid(k_range=k_range, n_boot=n_boot, random_state=random_state, fast=True, vote_method='mode', use_excess_mass=False)
+        self.idx = CBVHybrid(
+            k_range=k_range, n_boot=n_boot, random_state=random_state,
+            mode='threshold', vote_method='mode', use_excess_mass=False,
+        )
     def fit(self, X):
         self.idx.fit(X)
         return self
     def predict(self):
         return self.idx.predict()
 
-indices.append(CBVAdapter(k_range=K_RANGE, n_boot=N_BOOT, random_state=42))
 
-log(f'  {len(indices)} indices: {[i.name for i in indices]}')
-
-# ── 3. Run benchmark ──
-log('\n[3/4] Running benchmark (all 7 indices, including DUD)...')
+# ── 3. Run benchmark (multi-seed) ──
+log('\n[3/4] Running benchmark across seeds: %s' % SEEDS)
 t0 = time.time()
 
-runner = BenchmarkRunner(indices, all_datasets, random_state=42)
-results = runner.run_all(parallel=True, n_jobs=-1)
+all_seed_results = {}  # seed -> pd.DataFrame
+
+for seed in SEEDS:
+    log(f'\n  Seed {seed}...')
+    indices = get_all_indices(k_range=K_RANGE, random_state=seed)
+    indices.append(CBVAdapter(k_range=K_RANGE, n_boot=N_BOOT, random_state=seed))
+    log(f'    {len(indices)} indices: {[i.name for i in indices]}')
+
+    runner = BenchmarkRunner(indices, all_datasets, random_state=seed)
+    results = runner.run_all(parallel=True, n_jobs=-1)
+    all_seed_results[seed] = results
+    log(f'    Results shape: {results.shape}')
 
 elapsed = time.time() - t0
-log(f'  Completed in {elapsed:.1f}s')
-log(f'  Datasets: {len(results)}')
-log(f'  Results shape: {results.shape}')
+log(f'\n  All seeds completed in {elapsed:.1f}s')
 
-# Save raw results (all 7 indices — DUD included for reference)
-results_path = RESULTS_DIR / 'benchmark_results.csv'
-runner.save_results(results, str(results_path))
+# ── 4. Multi-seed metrics ──
+log('\n[4/4] Computing metrics across seeds...')
 
-# ── 4. Summary & plots ──
-log('\n[4/4] Generating summary...')
-summary = runner.summarize_results(results)
-
-# ── 4a. Main accuracy table (excluding DUD — not designed for k-estimation) ──
 EXCLUDED_INDICES = {'DUD Index'}
-acc = summary['accuracy']
-acc_main = acc[~acc['index'].isin(EXCLUDED_INDICES)].copy()
+INDEX_NAMES = [n for n, _ in runner._resolved_indices]
 
-log('\nAccuracy (fraction correct) — main (DUD excluded, see appendix):')
-log(acc_main.to_string(index=False))
+def compute_ari(y_true, k_hat, X, seed=42):
+    """Adjusted Rand Index: run KMeans(k_hat) and compare to ground-truth labels."""
+    if k_hat < 2 or k_hat >= X.shape[0]:
+        return np.nan
+    try:
+        labels = KMeans(n_clusters=int(k_hat), n_init=KMEANS_N_INIT, random_state=seed).fit_predict(X)
+        return float(adjusted_rand_score(y_true, labels))
+    except Exception:
+        return np.nan
 
-# Save main accuracy
-acc_main_path = RESULTS_DIR / 'accuracy.csv'
-with open(str(acc_main_path), 'w', encoding='utf-8') as f:
-    acc_main.to_csv(f, index=False)
-log(f'  Main accuracy saved to {acc_main_path}')
 
-# ── 4b. Full accuracy table (including DUD for reference) ──
-acc_full_path = RESULTS_DIR / 'accuracy_full.csv'
-with open(str(acc_full_path), 'w', encoding='utf-8') as f:
-    acc.to_csv(f, index=False)
-log(f'  Full accuracy (incl. DUD) saved to {acc_full_path}')
+# Per-seed, per-index metrics
+seeds_metrics = {}  # seed -> {index -> {accuracy, mae, acc_plus1, ari}}
 
-# ── 4c. Mean rank (main) ──
-mean_rank = summary['mean_rank']
+for seed in SEEDS:
+    res = all_seed_results[seed]
+    k_trues = res['k_true'].values
+    metrics_for_seed = {}
+
+    for idx_name in INDEX_NAMES:
+        k_col = f'{idx_name}_k'
+        corr_col = f'{idx_name}_correct'
+        if k_col not in res.columns:
+            continue
+
+        k_hats = res[k_col].values
+        correct = res[corr_col].values if corr_col in res.columns else np.zeros(len(res))
+
+        # Accuracy (exact match)
+        accuracy = float(np.mean(correct))
+
+        # MAE: mean absolute error (ignoring failed: k_hat < 0)
+        mask_valid = k_hats >= 0
+        if mask_valid.sum() > 0:
+            mae = float(np.mean(np.abs(k_hats[mask_valid] - k_trues[mask_valid])))
+            acc_plus1 = float(np.mean(np.abs(k_hats[mask_valid] - k_trues[mask_valid]) <= 1.0))
+        else:
+            mae = np.nan
+            acc_plus1 = np.nan
+
+        # ARI: run KMeans with k_hat per dataset
+        aris = []
+        for i, ds in enumerate(all_datasets):
+            kh = k_hats[i]
+            if kh >= 2 and 'y_true' in ds:
+                aris.append(compute_ari(ds['y_true'], int(kh), ds['X'], seed=seed))
+            else:
+                aris.append(np.nan)
+        ari = float(np.nanmean(aris)) if aris else np.nan
+
+        metrics_for_seed[idx_name] = {
+            'accuracy': accuracy,
+            'mae': mae,
+            'acc_plus1': acc_plus1,
+            'ari': ari,
+        }
+
+    seeds_metrics[seed] = metrics_for_seed
+
+
+# ── 4a. Aggregate table: mean ± std across seeds ──
+log('\nMulti-seed metrics (mean ± std across %d seeds):' % N_SEEDS)
+
+metric_names = ['accuracy', 'mae', 'acc_plus1', 'ari']
+metric_labels = {
+    'accuracy': 'Accuracy',
+    'mae': 'MAE',
+    'acc_plus1': '±1 Acc',
+    'ari': 'ARI',
+}
+
+agg_records = []
+for idx_name in INDEX_NAMES:
+    if idx_name in EXCLUDED_INDICES:
+        continue
+    row = {'index': idx_name}
+    for m in metric_names:
+        vals = [seeds_metrics[s][idx_name][m] for s in SEEDS if idx_name in seeds_metrics[s]]
+        if len(vals) > 0 and not all(np.isnan(v) for v in vals):
+            valid = [v for v in vals if not np.isnan(v)]
+            if len(valid) > 0:
+                row[f'{m}_mean'] = np.mean(valid)
+                row[f'{m}_std'] = np.std(valid, ddof=1) if len(valid) > 1 else 0.0
+            else:
+                row[f'{m}_mean'] = np.nan
+                row[f'{m}_std'] = np.nan
+        else:
+            row[f'{m}_mean'] = np.nan
+            row[f'{m}_std'] = np.nan
+    agg_records.append(row)
+
+agg_df = pd.DataFrame(agg_records).sort_values('accuracy_mean', ascending=False)
+log(agg_df.to_string(index=False))
+
+# Save aggregated metrics
+agg_path = RESULTS_DIR / 'metrics_multi_seed.csv'
+with open(str(agg_path), 'w', encoding='utf-8') as f:
+    agg_df.to_csv(f, index=False)
+log(f'\n  Multi-seed metrics saved to {agg_path}')
+
+# ── 4b. Per-seed accuracy table ──
+log('\nPer-seed accuracy:')
+acc_records = []
+for seed in SEEDS:
+    row = {'seed': seed}
+    for idx_name in INDEX_NAMES:
+        if idx_name in EXCLUDED_INDICES:
+            continue
+        row[idx_name] = seeds_metrics[seed][idx_name]['accuracy']
+    acc_records.append(row)
+
+per_seed_acc = pd.DataFrame(acc_records)
+log(per_seed_acc.to_string(index=False))
+
+per_seed_path = RESULTS_DIR / 'accuracy_per_seed.csv'
+with open(str(per_seed_path), 'w', encoding='utf-8') as f:
+    per_seed_acc.to_csv(f, index=False)
+
+# ── 4c. Mean rank (last seed, for reference) ──
+last_seed = SEEDS[-1]
+last_runner = BenchmarkRunner(
+    get_all_indices(k_range=K_RANGE, random_state=last_seed) + [CBVAdapter(k_range=K_RANGE, n_boot=N_BOOT, random_state=last_seed)],
+    all_datasets, random_state=last_seed,
+)
+last_summary = last_runner.summarize_results(all_seed_results[last_seed])
+mean_rank = last_summary['mean_rank']
 mean_rank_main = mean_rank[~mean_rank.index.isin(EXCLUDED_INDICES)]
-log('\nMean rank (1 = best) — main:')
+log('\nMean rank (1 = best) — last seed reference:')
 log(str(mean_rank_main))
 
-# ── 4d. Statistical significance tests ──
-friedman = summary.get('friedman', None)
+# Statistical tests
+friedman = last_summary.get('friedman', None)
 if friedman:
     stat, p_val = friedman
-    log(f'\nFriedman test (all indices): chi2={stat:.3f}, p={p_val:.4f}')
-    if p_val < 0.05:
-        log('  → Significant: indices differ in estimated ranks (p < 0.05)')
-    else:
-        log('  → Not significant: no evidence of rank differences')
+    log(f'\nFriedman test: chi2={stat:.3f}, p={p_val:.4f}')
+    log('  → Significant (p < 0.05)' if p_val < 0.05 else '  → Not significant')
 
-# Nemenyi post-hoc
-nemenyi = summary.get('nemenyi', None)
-if nemenyi is not None:
-    # Filter to main indices only
-    nemenyi_main = nemenyi.loc[
-        [i for i in nemenyi.index if i not in EXCLUDED_INDICES],
-        [i for i in nemenyi.columns if i not in EXCLUDED_INDICES],
-    ]
-    log('\nNemenyi post-hoc p-values (main indices):')
-    for i in nemenyi_main.index:
-        for j in nemenyi_main.columns:
-            if i < j:
-                p = nemenyi_main.loc[i, j]
-                star = ' *' if p < 0.05 else ''
-                log(f'  {i} vs {j}: p={p:.4f}{star}')
+# ── 4d. Save all seed results ──
+for seed in SEEDS:
+    seed_csv = RESULTS_DIR / f'results_seed_{seed}.csv'
+    with open(str(seed_csv), 'w', encoding='utf-8') as f:
+        all_seed_results[seed].to_csv(f, index=False)
 
-# ── 4e. Plots (main indices only) ──
-log('\nGenerating plots...')
+# Combined results (last seed for full detail)
+combined_path = RESULTS_DIR / 'benchmark_results.csv'
+with open(str(combined_path), 'w', encoding='utf-8') as f:
+    all_seed_results[SEEDS[-1]].to_csv(f, index=False)
 
-# Re-rank excluding DUD for the rank plot
-index_names = [name for name, _ in runner._resolved_indices]
-main_idx_names = [n for n in index_names if n not in EXCLUDED_INDICES]
-suffix_k = '_k'
-k_cols = [f'{n}{suffix_k}' for n in main_idx_names]
-k_cols = [c for c in k_cols if c in results.columns]
-available_main = [c.replace(suffix_k, '') for c in k_cols]
-
-# Manual rank computation for main indices only
-rank_data = {}
-for _, row in results.iterrows():
-    k_true = row['k_true']
-    scores = {}
-    for idx_name in main_idx_names:
-        col = f'{idx_name}{suffix_k}'
-        k_hat = row[col]
-        if k_hat < 0:
-            abs_err = float('inf')
-        else:
-            abs_err = abs(int(k_hat) - int(k_true))
-        scores[idx_name] = abs_err
-    ranked = sorted(scores.items(), key=lambda x: x[1])
-    for rank_pos, (idx_name, _) in enumerate(ranked, start=1):
-        if idx_name not in rank_data:
-            rank_data[idx_name] = []
-        rank_data[idx_name].append(rank_pos)
-
-rank_df_main = pd.DataFrame(rank_data)
-runner.plot_accuracy_comparison(results, str(RESULTS_DIR / 'accuracy_comparison.png'))
-
-# Custom rank plot for main indices
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots(figsize=(max(8, rank_df_main.shape[1] * 0.8), 5))
-positions = np.arange(rank_df_main.shape[1])
-bp = ax.boxplot(rank_df_main.values, positions=positions, patch_artist=True, showmeans=True,
-                meanprops={'marker': 'D', 'markerfacecolor': 'red', 'markersize': 5})
-colors = plt.cm.Set2(np.linspace(0, 1, rank_df_main.shape[1]))
-for patch, color in zip(bp['boxes'], colors):
-    patch.set_facecolor(color)
-ax.set_xlabel('Cluster Validity Index')
-ax.set_ylabel('Rank (1 = best)')
-ax.set_title('Rank Distribution Across Datasets (DUD Excluded)')
-ax.set_xticks(positions)
-ax.set_xticklabels(rank_df_main.columns, rotation=45, ha='right', fontsize=9)
-ax.invert_yaxis()
-fig.tight_layout()
-rank_plot_path = RESULTS_DIR / 'rank_comparison.png'
-fig.savefig(str(rank_plot_path), dpi=150, bbox_inches='tight')
-plt.close(fig)
-log(f'  Rank plot saved to {rank_plot_path}')
-
-# ── 4f. Per-dataset detail ──
+# ── 4e. Per-dataset detail (last seed) ──
 detail_path = RESULTS_DIR / 'per_dataset_results.csv'
 with open(str(detail_path), 'w', encoding='utf-8') as f:
-    results.to_csv(f, index=False)
+    all_seed_results[SEEDS[-1]].to_csv(f, index=False)
+
+# ── 4f. Plots (last seed) ──
+log('\nGenerating plots (last seed)...')
+last_runner.plot_accuracy_comparison(
+    all_seed_results[last_seed],
+    str(RESULTS_DIR / 'accuracy_comparison.png'),
+)
+last_runner.plot_rank_comparison(
+    all_seed_results[last_seed],
+    str(RESULTS_DIR / 'rank_comparison.png'),
+)
 
 log(f'\n{"=" * 60}')
 log(f'Phase 3 complete. All outputs in: {RESULTS_DIR}')
-log(f'  - benchmark_results.csv     (full results, all indices)')
+log(f'  - metrics_multi_seed.csv     (mean±std across {N_SEEDS} seeds)')
+log(f'  - accuracy_per_seed.csv      (per-seed accuracy breakdown)')
+log(f'  - results_seed_*.csv         (per-seed raw results)')
+log(f'  - benchmark_results.csv      (combined results)')
 log(f'  - per_dataset_results.csv    (full detail)')
-log(f'  - accuracy.csv              (main accuracy, DUD excluded)')
-log(f'  - accuracy_full.csv         (full accuracy, incl. DUD)')
-log(f'  - accuracy_comparison.png   (bar chart)')
-log(f'  - rank_comparison.png       (box plot, DUD excluded)')
+log(f'  - accuracy_comparison.png    (bar chart)')
+log(f'  - rank_comparison.png        (box plot)')
 log(f'{"=" * 60}')
