@@ -1,7 +1,7 @@
 """
-Phase 3: Full Benchmark — Paper #10 (CBV)
+Phase C: Full Benchmark — Paper #10 (CBV)
 
-Runs all 7 CV indices on 25+ synthetic + 5 real-world datasets.
+Runs all 11 CV indices on 44 synthetic + 15 real-world datasets.
 Multi-seed protocol: [42, 73, 123, 256, 999] (P0-2).
 Multi-metric evaluation: accuracy, MAE, ±1 accuracy, ARI (P0-3).
 Saves results CSV + accuracy/rank plots to results/ directory.

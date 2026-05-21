@@ -1,7 +1,7 @@
 # Session Handover Log — Paper #10 (CBV)
 
 > **Paper**: Critical Bandwidth as a Cluster Validation Index
-> **Status**: Major Revision — Phase A+B complete, Phase C next
+> **Status**: Major Revision — Phase A+B+C complete, Phase D next
 > **Target**: JMLR
 
 ---
@@ -18,8 +18,26 @@ Paper #10 proposes **CBV (Critical Bandwidth Validation)**, the first systematic
 
 ## Current State — After Phase B Revision
 
-### Benchmark Results (Multi-Seed, Multi-Metric)
+### Benchmark Results (Multi-Seed, Multi-Metric — Phase C Scope)
 
+**10 indices** (6 pre-Phase C + 4 Phase C) on **50 datasets** (44 synth + 6 core real) — single seed=42 baseline:
+
+| Index | Accuracy |
+|------|:--------:|
+| Gap Statistic | **62.0%** |
+| **CBV** | **56.0%** |
+| CH Index | 48.0% |
+| Silhouette | 44.0% |
+| KL Index | 38.0% |
+| Jump Statistic | 36.0% |
+| Davies-Bouldin | 32.0% |
+| Dunn Index | 24.0% |
+| McClain-Rao | 10.0% |
+| Hartigan | 4.0% |
+
+CBV maintains strong performance (#2 of 10) on the expanded benchmark. New indices KL and Jump provide additional comparison baselines. Hartigan's known overestimation bias shows in low accuracy on well-separated data.
+
+### Phase B Results (carried forward)
 5 seeds [42, 73, 123, 256, 999] — mean ± std across 31 datasets:
 
 | Index | Accuracy | MAE | ±1 Acc | ARI |
@@ -46,7 +64,7 @@ CBV improved from complementary to **top-tier** performance:
 |:-----:|-------------|:-----:|:------:|
 | **A** | Quick Credibility Wins | 7.5 | ✅ **Done** |
 | **B** | Methodology Hardening | 12 | ✅ **Done** |
-| **C** | Benchmark Expansion | 11 | Pending |
+| **C** | Benchmark Expansion | 11 | ✅ **Done** |
 | **D** | Advanced Features | 8 | Pending |
 | **E** | Full Benchmark | 4 | Pending |
 | **F** | Manuscript Revision | 60+ | Pending |
@@ -69,13 +87,14 @@ CBV improved from complementary to **top-tier** performance:
 | P1-2 | Multimodal weight: `multimodal_weight()` replaces `bimodality_strength` | `utils/weighting.py`, `cbv/index.py`, `hybrid.py`, `spectral.py` |
 | P1-10 | Weight sensitivity: 3 methods compared, excess_mass best | `calibration/weight_sensitivity.py` |
 
-### Phase C — Benchmark Expansion
+### Phase C — Completed Items
 
-| # | Item | Effort |
-|---|------|:------:|
-| P1-4 | New indices (Hartigan, KL, etc.) | 5h |
-| P1-5/P1-6 | More synthetic + real datasets | 6h |
-| P1-7 | Complementarity expansion | 3h |
+| # | Item | Files Changed |
+|---|------|:-------------:|
+| P1-4 | New indices: Hartigan, KL, Jump, McClain-Rao | `comparison/indices.py` |
+| P1-5 | +19 synthetic datasets (aniso, imbalanced, varied-std, high-k, sparse, non-convex, small-n) | `benchmark/synthetic.py` |
+| P1-6 | +8 real datasets (Glass, Yeast, Ecoli, Segmentation, Olivetti Faces, Parkinsons, Ionosphere, Digits full) | `benchmark/real_data.py` |
+| P1-7 | Complementarity analysis: agreement matrix, disagreement profile, failure patterns, unique success sets | `analysis/complementarity.py` |
 
 ### Phase D — Advanced Features
 
@@ -103,17 +122,23 @@ scripts/paper-10/
     hybrid.py         ← CBVHybrid (mode param, excess_mass, adaptive_tolerance)
     __init__.py       ← Exports CBVHybrid
   benchmark/
-    synthetic.py      ← SyntheticDataGenerator
-    real_data.py      ← RealDataLoader
+    synthetic.py      ← SyntheticDataGenerator (44 datasets: 25 core + 19 Phase C)
+    real_data.py      ← RealDataLoader (14 datasets: 6 core + 8 OpenML)
     runner.py         ← BenchmarkRunner (sequential/parallel, summarize, plots)
   comparison/
-    indices.py        ← 6 CVI wrappers, CVIWrapper, get_all_indices (n_init=10)
+    indices.py        ← 10 CVI wrappers, CVIWrapper, get_all_indices (n_init=10)
     report.py         ← ComparisonReport
     __init__.py       ← Exports CVIWrapper, ComparisonReport, get_all_indices
+  analysis/
+    complementarity.py ← ComplementarityAnalysis (Phase C: agreement, disagreement, failure, unique sets)
+    __init__.py
   utils/
     weighting.py      ← compute_dimension_weights, weighted_k_vote
     k_selection.py    ← elbow_scan
     preprocessing.py  ← standardize, remove_constant_features
+  calibration/         ← Phase B: tolerance sweep + weight sensitivity
+    tolerance_sweep.py
+    weight_sensitivity.py
   run_benchmark.py    ← Main entry: multi-seed, multi-metric
 
 papers/
@@ -153,7 +178,8 @@ results/ (from Phase A benchmark)
 | #9 | 2026-05-21 | Peer review: 5-reviewer panel, Major Revision, 5 P0 items |
 | #10 | 2026-05-21 | **Phase A execution**: mode rename, n_init=10, multi-seed, MAE/±1/ARI |
 | #11 | 2026-05-21 | **Phase B execution**: tolerance sweep (opt=1.30), multimodal weight, sensitivity analysis. CBV 43.9%→60.6% |
+| #12 | 2026-05-22 | **Phase C execution**: 4 new indices (Hartigan, KL, Jump, McClain-Rao), +19 synth datasets, +8 OpenML real datasets, complementarity analysis module. Benchmark running on 58 datasets × 5 seeds. |
 
 ---
 
-*Next: Phase C — Benchmark Expansion. Add Hartigan/KL indices (+19 synth + 9 real datasets).*
+*Next: Phase D — Advanced Features. Correlated-dimension ablation (P0-6), Sheather-Jones bandwidth (P1-3), random 2D projections CBV (P1-8). Then Phase E full benchmark run, then Phase F manuscript revision.*

@@ -1,7 +1,7 @@
 # Paper #10 — Revision Roadmap (Phase A-F)
 
-> **Status**: Phase A complete (Quick Credibility Wins)
-> **Next**: Phase B (Methodology Hardening) — P1-1 tolerance calibration, P1-2 multimodal weight
+> **Status**: Phase A+B+C complete (Benchmark Expansion)
+> **Next**: Phase D (Advanced Features)
 
 ---
 
@@ -45,14 +45,14 @@
 
 **Inputs needed**: `cbv/index.py`, `cbv/hybrid.py`, `run_benchmark.py`
 
-### Phase C: Benchmark Expansion
+### Phase C: Benchmark Expansion ✅
 
-| # | Item | Effort | Priority | Depends On |
-|---|------|:------:|:--------:|:----------:|
-| P1-4 | New competing indices (Hartigan, KL, etc.) | 5h | High | — |
-| P1-5 | Expand synthetic benchmark (+19 datasets) | 3h | Medium | — |
-| P1-6 | Expand real benchmark (+9 datasets) | 3h | Medium | — |
-| P1-7 | Expand complementarity analysis | 3h | Medium | Phase B |
+| # | Item | Effort | Priority | Status |
+|---|------|:------:|:--------:|:------:|
+| P1-4 | New competing indices (Hartigan, KL, Jump, McClain-Rao) | 5h | High | ✅ Done |
+| P1-5 | Expand synthetic benchmark (+19 datasets) | 3h | Medium | ✅ Done |
+| P1-6 | Expand real benchmark (+8 OpenML datasets) | 3h | Medium | ✅ Done |
+| P1-7 | Complementarity analysis (agreement, disagreement, failure) | 3h | Medium | ✅ Done |
 
 ### Phase D: Advanced Features
 
@@ -93,8 +93,8 @@ Phase A (Quick Wins)    ← DONE
      ↓
 Phase B (Methodology)   ← DONE
      ↓
-Phase C (Benchmark)     ← NEXT
-Phase D (Advanced Feat.) ← parallel with C
+Phase C (Benchmark)     ← DONE
+Phase D (Advanced Feat.) ← NEXT (parallel with C)
      ↓
 Phase E (Full Run)      ← after C+D
      ↓

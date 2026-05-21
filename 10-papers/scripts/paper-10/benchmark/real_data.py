@@ -6,6 +6,7 @@ from sklearn.datasets import (
     load_iris,
     load_digits,
     load_breast_cancer,
+    fetch_olivetti_faces,
 )
 from sklearn.utils import Bunch
 
@@ -191,8 +192,210 @@ class RealDataLoader:
         self._cached[cache_key] = entry
         return entry
 
+    # ── OpenML-based loaders (Phase C additions) ──
+
+    def _load_openml_dataset(
+        self,
+        openml_id: int,
+        name: str,
+        target_column: Optional[str] = None,
+        difficulty: str = "unknown",
+        pca_components: Optional[int] = None,
+    ) -> Dict:
+        """Load a dataset from OpenML.
+
+        Parameters
+        ----------
+        openml_id : int
+            OpenML dataset ID.
+        name : str
+            Cache key and dataset name.
+        target_column : str or None
+            Name of the target column. If None, auto-detected.
+        difficulty : str
+            One of 'easy', 'medium', 'hard', 'unknown'.
+        pca_components : int or None
+            If set, reduce dimensionality via PCA before returning.
+
+        Returns
+        -------
+        dataset dict.
+        """
+        cache_key = f"openml_{name}"
+        if cache_key in self._cached:
+            return self._cached[cache_key]
+
+        try:
+            from sklearn.datasets import fetch_openml
+            from sklearn.preprocessing import LabelEncoder
+
+            data = fetch_openml(data_id=openml_id, as_frame=True, parser='pandas')
+
+            # If target_column specified and exists, use it directly
+            if target_column is not None and target_column in data.frame.columns:
+                y_true_raw = data.frame[target_column].values
+                feature_cols = [c for c in data.frame.columns if c != target_column]
+                X = data.frame[feature_cols].values.astype(np.float64)
+            else:
+                X = data.data.values.astype(np.float64)
+                y_true_raw = data.target.values
+
+            # Encode non-numeric targets
+            le = LabelEncoder()
+            y_true = le.fit_transform(y_true_raw.astype(str))
+            y_true = y_true.astype(np.int64)
+
+            # Clean NaN rows
+            valid_rows = ~np.isnan(X).any(axis=1)
+            X = X[valid_rows]
+            y_true = y_true[valid_rows]
+
+            # Remove constant features
+            col_std = np.std(X, axis=0)
+            X = X[:, col_std > 0]
+
+            # PCA reduction if requested
+            if pca_components is not None and X.shape[1] > pca_components:
+                from sklearn.decomposition import PCA
+                pca = PCA(n_components=pca_components, random_state=42)
+                X = pca.fit_transform(X)
+
+            entry = self._build_entry(X, y_true, name, difficulty)
+        except Exception as e:
+            print(f"WARNING: Cannot load {name} from OpenML ({openml_id}): {e}")
+            entry = {
+                "X": np.empty((0, 0)),
+                "y_true": np.empty(0),
+                "name": f"{name}_unavailable",
+                "n_samples": 0,
+                "n_features": 0,
+                "k_true": 0,
+                "difficulty": "unavailable",
+            }
+
+        self._cached[cache_key] = entry
+        return entry
+
+    def load_glass(self) -> Dict:
+        """Load the Glass Identification dataset (214 x 9, 6 classes).
+
+        Returns
+        -------
+        dataset dict.
+        """
+        return self._load_openml_dataset(
+            41, "glass", target_column="Type", difficulty="medium"
+        )
+
+    def load_wine_quality(self) -> Dict:
+        """Load the Wine Quality (white) dataset (4898 x 11, 7 classes).
+
+        Returns
+        -------
+        dataset dict.
+        """
+        return self._load_openml_dataset(
+            40491, "wine_quality", target_column="quality", difficulty="hard"
+        )
+
+    def load_yeast(self) -> Dict:
+        """Load the Yeast dataset (1484 x 8, 10 classes).
+
+        Returns
+        -------
+        dataset dict.
+        """
+        return self._load_openml_dataset(
+            181, "yeast", target_column="Class", difficulty="hard"
+        )
+
+    def load_ecoli(self) -> Dict:
+        """Load the Ecoli dataset (336 x 7, 8 classes).
+
+        Returns
+        -------
+        dataset dict.
+        """
+        return self._load_openml_dataset(
+            39, "ecoli", target_column="Class", difficulty="medium"
+        )
+
+    def load_segmentation(self) -> Dict:
+        """Load the Image Segmentation dataset (2310 x 19, 7 classes).
+
+        Returns
+        -------
+        dataset dict.
+        """
+        return self._load_openml_dataset(
+            36, "segmentation", target_column="class", difficulty="medium"
+        )
+
+    def load_olivetti_faces(self) -> Dict:
+        """Load the Olivetti Faces dataset (400 x 4096, 40 subjects).
+
+        Applies PCA to 64 components to reduce dimensionality for
+        k-estimation benchmarking.
+
+        Returns
+        -------
+        dataset dict.
+        """
+        cache_key = "olivetti_faces"
+        if cache_key in self._cached:
+            return self._cached[cache_key]
+
+        try:
+            olivetti = fetch_olivetti_faces(shuffle=True, random_state=42)
+            X = olivetti.data
+            y_true = olivetti.target
+
+            # PCA to 64 dimensions
+            from sklearn.decomposition import PCA
+            pca = PCA(n_components=64, random_state=42)
+            X = pca.fit_transform(X)
+
+            entry = self._build_entry(X, y_true, "olivetti_faces", "hard")
+        except Exception as e:
+            print(f"WARNING: Cannot load Olivetti Faces: {e}")
+            entry = {
+                "X": np.empty((0, 0)),
+                "y_true": np.empty(0),
+                "name": "olivetti_faces_unavailable",
+                "n_samples": 0,
+                "n_features": 0,
+                "k_true": 0,
+                "difficulty": "unavailable",
+            }
+
+        self._cached[cache_key] = entry
+        return entry
+
+    def load_parkinsons(self) -> Dict:
+        """Load the Parkinsons dataset (195 x 22, 2 classes).
+
+        Returns
+        -------
+        dataset dict.
+        """
+        return self._load_openml_dataset(
+            1488, "parkinsons", target_column="class", difficulty="medium"
+        )
+
+    def load_ionosphere(self) -> Dict:
+        """Load the Ionosphere dataset (351 x 34, 2 classes).
+
+        Returns
+        -------
+        dataset dict.
+        """
+        return self._load_openml_dataset(
+            59, "ionosphere", target_column="class", difficulty="medium"
+        )
+
     def load_all(
-        self, include_seeds: bool = True, seeds_url: Optional[str] = None
+        self, include_seeds: bool = True, seeds_url: Optional[str] = None,
+        include_openml: bool = True,
     ) -> List[Dict]:
         """Load all available real-world datasets.
 
@@ -203,6 +406,8 @@ class RealDataLoader:
             local file).
         seeds_url : str or None
             Passed through to load_seeds().
+        include_openml : bool
+            Whether to attempt loading Phase C OpenML datasets.
 
         Returns
         -------
@@ -213,6 +418,7 @@ class RealDataLoader:
             self.load_iris(),
             self.load_digits(subset_classes=[0, 1]),
             self.load_digits(subset_classes=[0, 1, 2]),
+            self.load_digits(subset_classes=list(range(10))),
             self.load_breast_cancer(),
         ]
 
@@ -221,6 +427,19 @@ class RealDataLoader:
                 datasets.append(self.load_seeds(url=seeds_url))
             except RuntimeError as e:
                 print(f"WARNING: Skipping Seeds dataset. {e}")
+
+        if include_openml:
+            # Phase C additions (9 datasets, gracefully skip on failure)
+            for loader_name in [
+                "load_glass", "load_wine_quality", "load_yeast",
+                "load_ecoli", "load_segmentation", "load_olivetti_faces",
+                "load_parkinsons", "load_ionosphere",
+            ]:
+                entry = getattr(self, loader_name)()
+                if entry.get("n_samples", 0) > 0:
+                    datasets.append(entry)
+                else:
+                    print(f"WARNING: Skipping unavailable dataset: {loader_name}")
 
         return datasets
 

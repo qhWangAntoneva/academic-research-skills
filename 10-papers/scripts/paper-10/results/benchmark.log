@@ -429,3 +429,18 @@ Generating plots (last seed)...
 23:26:33   - accuracy_comparison.png    (bar chart)
 23:26:33   - rank_comparison.png        (box plot)
 23:26:33 ============================================================
+01:04:13 ============================================================
+01:04:13 Phase 3: Full Benchmark — Paper #10 (CBV) — Multi-Seed + Multi-Metric
+01:04:13 ============================================================
+01:04:13 
+[1/4] Building datasets...
+01:04:13   Synthetic: 44 datasets
+01:04:20   Real: 14 datasets
+01:04:20   Total: 58 datasets
+01:04:20 
+[2/4] Building indices...
+01:04:20 
+[3/4] Running benchmark across seeds: [42, 73, 123, 256, 999]
+01:04:20 
+  Seed 42...
+01:04:20     11 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'Hartigan', 'KL Index', 'Jump Statistic', 'McClain-Rao', 'CBV']

@@ -3,7 +3,7 @@ from sklearn.datasets import make_blobs as sk_make_blobs
 from sklearn.datasets import make_classification as sk_make_classification
 from sklearn.datasets import make_moons as sk_make_moons
 from sklearn.datasets import make_circles as sk_make_circles
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 
 class SyntheticDataGenerator:
@@ -258,6 +258,231 @@ class SyntheticDataGenerator:
             "params": params,
         }
 
+    def make_anisotropic_blobs(
+        self,
+        n_samples: int = 300,
+        n_features: int = 2,
+        n_clusters: int = 3,
+        stretch: float = 3.0,
+        name: Optional[str] = None,
+    ) -> Dict:
+        """Generate elongated (anisotropic) Gaussian blobs.
+
+        Creates isotropic blobs then applies a random rotation + stretch
+        transformation, producing ellipsoidal clusters.
+
+        Parameters
+        ----------
+        n_samples : int
+            Total number of samples.
+        n_features : int
+            Number of features.
+        n_clusters : int
+            Number of ground-truth clusters.
+        stretch : float
+            Factor by which to stretch one axis relative to others.
+        name : str or None
+            Custom dataset name; auto-generated if None.
+
+        Returns
+        -------
+        dict with keys 'X', 'y_true', 'name', 'params'.
+        """
+        rng = np.random.RandomState(self.random_state)
+
+        # Generate isotropic blobs
+        X, y_true = sk_make_blobs(
+            n_samples=n_samples,
+            n_features=n_features,
+            centers=n_clusters,
+            cluster_std=1.0,
+            random_state=self.random_state,
+        )
+
+        # Build a random rotation matrix
+        Q, _ = np.linalg.qr(rng.randn(n_features, n_features))
+
+        # Scale vector: stretch first axis, keep others at 1
+        s = np.ones(n_features)
+        s[0] = stretch
+
+        # Apply: X_stretched = X @ (Q * s)
+        X = X @ (Q * s)
+
+        if name is None:
+            name = f"aniso_k{n_clusters}_d{n_features}_stretch{stretch}"
+
+        params = {
+            "n_samples": n_samples,
+            "n_features": n_features,
+            "n_clusters": n_clusters,
+            "stretch": stretch,
+            "generator": "make_anisotropic_blobs",
+        }
+
+        return {
+            "X": X,
+            "y_true": y_true,
+            "name": name,
+            "k_true": n_clusters,
+            "n_samples": n_samples,
+            "n_features": n_features,
+            "params": params,
+        }
+
+    def make_varied_blobs(
+        self,
+        n_samples: int = 300,
+        n_features: int = 2,
+        n_clusters: int = 3,
+        cluster_stds: Tuple[float, ...] = (0.5, 1.0, 2.0),
+        name: Optional[str] = None,
+    ) -> Dict:
+        """Generate blobs with different standard deviations per cluster.
+
+        Parameters
+        ----------
+        n_samples : int
+            Total number of samples.
+        n_features : int
+            Number of features.
+        n_clusters : int
+            Number of ground-truth clusters.
+        cluster_stds : tuple of float
+            Standard deviation for each cluster. Length must equal n_clusters.
+        name : str or None
+            Custom dataset name; auto-generated if None.
+
+        Returns
+        -------
+        dict with keys 'X', 'y_true', 'name', 'params'.
+        """
+        # Generate each cluster separately to allow per-cluster std
+        X_list: List[np.ndarray] = []
+        y_list: List[np.ndarray] = []
+        centers = sk_make_blobs(
+            n_samples=n_clusters, n_features=n_features,
+            centers=n_clusters, random_state=self.random_state,
+        )[0]
+
+        samples_per_cluster = [n_samples // n_clusters] * n_clusters
+        # Distribute remainder
+        for i in range(n_samples % n_clusters):
+            samples_per_cluster[i] += 1
+
+        for i in range(n_clusters):
+            Xi, yi = sk_make_blobs(
+                n_samples=samples_per_cluster[i],
+                n_features=n_features,
+                centers=centers[i].reshape(1, -1),
+                cluster_std=cluster_stds[i] if i < len(cluster_stds) else 1.0,
+                random_state=self.random_state + i,
+            )
+            X_list.append(Xi)
+            y_list.append(np.full(samples_per_cluster[i], i))
+
+        X = np.vstack(X_list)
+        y_true = np.concatenate(y_list)
+
+        if name is None:
+            std_str = "_".join(str(s) for s in cluster_stds)
+            name = f"varied_k{n_clusters}_d{n_features}_stds{std_str}"
+
+        params = {
+            "n_samples": n_samples,
+            "n_features": n_features,
+            "n_clusters": n_clusters,
+            "cluster_stds": list(cluster_stds),
+            "generator": "make_varied_blobs",
+        }
+
+        return {
+            "X": X,
+            "y_true": y_true,
+            "name": name,
+            "k_true": n_clusters,
+            "n_samples": n_samples,
+            "n_features": n_features,
+            "params": params,
+        }
+
+    def make_imbalanced_blobs(
+        self,
+        n_samples: int = 300,
+        n_features: int = 2,
+        n_clusters: int = 3,
+        imbalance_ratio: float = 3.0,
+        name: Optional[str] = None,
+    ) -> Dict:
+        """Generate blobs with imbalanced cluster sizes.
+
+        Parameters
+        ----------
+        n_samples : int
+            Total number of samples.
+        n_features : int
+            Number of features.
+        n_clusters : int
+            Number of ground-truth clusters.
+        imbalance_ratio : float
+            Ratio of largest to smallest cluster size.
+        name : str or None
+            Custom dataset name; auto-generated if None.
+
+        Returns
+        -------
+        dict with keys 'X', 'y_true', 'name', 'params'.
+        """
+        # Geometric series of cluster sizes
+        sizes = np.geomspace(imbalance_ratio, 1.0, n_clusters)
+        sizes = sizes / sizes.sum() * n_samples
+        sizes = np.round(sizes).astype(int)
+        # Adjust to match total
+        diff = n_samples - sizes.sum()
+        sizes[-1] += diff
+
+        centers = sk_make_blobs(
+            n_samples=n_clusters, n_features=n_features,
+            centers=n_clusters, random_state=self.random_state,
+        )[0]
+
+        X_list: List[np.ndarray] = []
+        y_list: List[np.ndarray] = []
+        for i in range(n_clusters):
+            Xi, yi = sk_make_blobs(
+                n_samples=max(sizes[i], 2),
+                n_features=n_features,
+                centers=centers[i].reshape(1, -1),
+                cluster_std=1.0,
+                random_state=self.random_state + i,
+            )
+            X_list.append(Xi)
+            y_list.append(np.full(max(sizes[i], 2), i))
+
+        X = np.vstack(X_list)
+        y_true = np.concatenate(y_list)
+
+        if name is None:
+            name = f"imbal_k{n_clusters}_d{n_features}_ratio{imbalance_ratio}"
+
+        params = {
+            "n_samples": n_samples,
+            "n_features": n_features,
+            "n_clusters": n_clusters,
+            "imbalance_ratio": imbalance_ratio,
+            "generator": "make_imbalanced_blobs",
+        }
+
+        return {
+            "X": X,
+            "y_true": y_true,
+            "name": name,
+            "k_true": n_clusters,
+            "n_samples": n_samples,
+            "n_features": n_features,
+            "params": params,
+        }
+
     def generate_benchmark_suite(
         self, random_state: Optional[int] = None
     ) -> List[Dict]:
@@ -370,5 +595,105 @@ class SyntheticDataGenerator:
                     cluster_std=1.0,
                 )
             )
+
+        # ══════════════════════════════════════════════════════════════════
+        # Phase C additions (+19 datasets)
+        # ══════════════════════════════════════════════════════════════════
+
+        # ----- Anisotropic blobs (3) -----
+        aniso_configs = [
+            (3, 3.0),
+            (3, 5.0),
+            (5, 3.0),
+        ]
+        for n_clusters, stretch in aniso_configs:
+            gen = SyntheticDataGenerator(random_state=rng)
+            datasets.append(
+                gen.make_anisotropic_blobs(
+                    n_samples=300, n_clusters=n_clusters, stretch=stretch,
+                )
+            )
+
+        # ----- Imbalanced blobs (3) -----
+        imbal_configs = [
+            (3, 3.0),
+            (3, 5.0),
+            (5, 3.0),
+        ]
+        for n_clusters, ratio in imbal_configs:
+            gen = SyntheticDataGenerator(random_state=rng)
+            datasets.append(
+                gen.make_imbalanced_blobs(
+                    n_samples=300, n_clusters=n_clusters, imbalance_ratio=ratio,
+                )
+            )
+
+        # ----- Varied-std blobs (3) -----
+        varied_configs = [
+            (3, (0.5, 1.5, 3.0)),
+            (4, (0.5, 1.0, 2.0, 3.0)),
+            (5, (0.3, 0.7, 1.5, 2.5, 4.0)),
+        ]
+        for n_clusters, stds in varied_configs:
+            gen = SyntheticDataGenerator(random_state=rng)
+            datasets.append(
+                gen.make_varied_blobs(
+                    n_samples=300, n_clusters=n_clusters, cluster_stds=stds,
+                )
+            )
+
+        # ----- High-k blobs (3) — well-separated, k=10/12/15 -----
+        highk_configs = [(10, 0.5), (12, 0.5), (15, 0.5)]
+        for n_clusters, std in highk_configs:
+            gen = SyntheticDataGenerator(random_state=rng)
+            datasets.append(
+                gen.make_blobs(
+                    n_samples=600, n_features=2,
+                    n_clusters=n_clusters, cluster_std=std,
+                )
+            )
+
+        # ----- Sparse high-dim (3) — make_classification high noise -----
+        sparse_configs = [
+            (100, 3, 2),
+            (100, 3, 5),
+            (200, 5, 5),
+        ]
+        for n_features, n_classes, n_informative in sparse_configs:
+            n_noise = n_features - n_informative
+            gen = SyntheticDataGenerator(random_state=rng)
+            datasets.append(
+                gen.make_classification(
+                    n_samples=300,
+                    n_features=n_features,
+                    n_informative=n_informative,
+                    n_redundant=0,
+                    n_clusters_per_class=1,
+                    n_classes=n_classes,
+                )
+            )
+
+        # ----- Non-convex shapes (2) — additional hard configurations -----
+        gen = SyntheticDataGenerator(random_state=rng)
+        datasets.append(
+            gen.make_moons(n_samples=300, noise=0.15)
+        )
+        gen = SyntheticDataGenerator(random_state=rng)
+        datasets.append(
+            gen.make_circles(n_samples=300, factor=0.5, noise=0.15)
+        )
+
+        # ----- Small-n datasets (2) — test small-sample robustness -----
+        for n_samples in [50, 100]:
+            gen = SyntheticDataGenerator(random_state=rng)
+            ds = gen.make_blobs(
+                n_samples=n_samples,
+                n_features=2,
+                n_clusters=3,
+                cluster_std=1.0,
+            )
+            # Override name to include sample size for uniqueness
+            ds["name"] = f"smalln_k3_n{n_samples}"
+            datasets.append(ds)
 
         return datasets

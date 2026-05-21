@@ -423,7 +423,299 @@ def dud_cvi(
 
 
 # ---------------------------------------------------------------------------
-# g. CVIWrapper — Unified interface
+# g. Hartigan Index (Hartigan, 1975)
+# ---------------------------------------------------------------------------
+
+def hartigan_cvi(
+    X: np.ndarray,
+    k_range: Tuple[int, int] = (2, 20),
+    random_state: int = 42,
+) -> Dict:
+    """Hartigan's index (Hartigan, 1975).
+
+    Hartigan(k) = (W_k / W_{k+1} - 1) * (n - k - 1)
+
+    Choose the smallest k where Hartigan(k) <= 10 (rule-of-thumb threshold
+    from Hartigan's original paper).
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+    k_range : tuple (min, max), default=(2, 20)
+    random_state : int, default=42
+
+    Returns
+    -------
+    dict with keys: k_hat, scores, best_score
+    """
+    k_min, k_max = k_range
+    n = X.shape[0]
+
+    # Compute W_k for each k
+    W_vals: Dict[int, float] = {}
+    for k in range(k_min, k_max + 1):
+        if k >= n:
+            continue
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
+        unique = len(set(labels))
+        if unique < 2:
+            continue
+        W_vals[k] = _within_cluster_dispersion(X, labels)
+
+    # Compute Hartigan statistic
+    ks = sorted(W_vals.keys())
+    scores: List[Tuple[int, float]] = []
+    for i, k in enumerate(ks):
+        if k == ks[-1] or k >= n:
+            continue
+        W_k = W_vals.get(k)
+        W_k1 = W_vals.get(k + 1)
+        if W_k is None or W_k1 is None or W_k1 == 0:
+            continue
+        h = (W_k / W_k1 - 1.0) * (n - k - 1)
+        scores.append((k, h))
+
+    if not scores:
+        return {"k_hat": k_min, "scores": [], "best_score": None}
+
+    # First k where Hartigan <= 10
+    k_hat = k_min
+    for k, h in scores:
+        if h <= 10.0:
+            k_hat = k
+            break
+    else:
+        k_hat = scores[-1][0]  # fallback to last computed k
+
+    best_score = max(s[1] for s in scores)
+    return {"k_hat": k_hat, "scores": scores, "best_score": best_score}
+
+
+# ---------------------------------------------------------------------------
+# h. KL Index (Krzanowski & Lai, 1988)
+# ---------------------------------------------------------------------------
+
+def kl_cvi(
+    X: np.ndarray,
+    k_range: Tuple[int, int] = (2, 20),
+    random_state: int = 42,
+) -> Dict:
+    """Krzanowski-Lai index (Krzanowski & Lai, 1988).
+
+    KL(k) = |Diff_k / Diff_{k+1}|
+    where Diff_k = (k-1)^(2/d) * W_{k-1} - k^(2/d) * W_k
+
+    Higher KL(k) indicates stronger support for k clusters.
+    Requires k_range to span at least 4 values.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+    k_range : tuple (min, max), default=(2, 20)
+    random_state : int, default=42
+
+    Returns
+    -------
+    dict with keys: k_hat, scores, best_score
+    """
+    k_min, k_max = k_range
+    n, d = X.shape
+
+    # Compute W_k for each k
+    W_vals: Dict[int, float] = {}
+    for k in range(k_min - 1, k_max + 1):
+        if k < 1 or k >= n:
+            continue
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
+        unique = len(set(labels))
+        if unique < 2:
+            continue
+        W_vals[k] = _within_cluster_dispersion(X, labels)
+
+    ks = sorted(W_vals.keys())
+
+    # Compute Diff_k for k = k_min..k_max (need W_{k-1} and W_k)
+    diffs: Dict[int, float] = {}
+    for k in ks:
+        if k < k_min:
+            continue
+        W_km1 = W_vals.get(k - 1)
+        W_k = W_vals.get(k)
+        if W_km1 is None or W_k is None:
+            continue
+        diff = (k - 1) ** (2.0 / d) * W_km1 - k ** (2.0 / d) * W_k
+        diffs[k] = diff
+
+    diff_ks = sorted(diffs.keys())
+
+    # Compute KL(k) = |Diff_k / Diff_{k+1}|
+    scores: List[Tuple[int, float]] = []
+    for i, k in enumerate(diff_ks):
+        if k == diff_ks[-1]:
+            continue
+        Diff_k = diffs.get(k)
+        Diff_k1 = diffs.get(k + 1)
+        if Diff_k is None or Diff_k1 is None or Diff_k1 == 0:
+            continue
+        kl_val = abs(Diff_k / Diff_k1)
+        scores.append((k, kl_val))
+
+    if not scores:
+        return {"k_hat": k_min, "scores": [], "best_score": None}
+
+    best_k, best_score = max(scores, key=lambda x: x[1])
+    return {"k_hat": best_k, "scores": scores, "best_score": best_score}
+
+
+# ---------------------------------------------------------------------------
+# i. Jump Statistic (Sugar & James, 2003)
+# ---------------------------------------------------------------------------
+
+def jump_cvi(
+    X: np.ndarray,
+    k_range: Tuple[int, int] = (2, 20),
+    random_state: int = 42,
+) -> Dict:
+    """Jump statistic (Sugar & James, 2003).
+
+    Uses the transformed distortion:
+        J(k) = M_k^(-d/2) - M_{k-1}^(-d/2)
+    where M_k = W_k / (n * d) is the mean squared error per dimension
+    and d = number of features.
+
+    The optimal k is where the "jump" in transformed distortion is largest.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+    k_range : tuple (min, max), default=(2, 20)
+    random_state : int, default=42
+
+    Returns
+    -------
+    dict with keys: k_hat, scores, best_score
+    """
+    k_min, k_max = k_range
+    n, d = X.shape
+    Y = d / 2.0  # transformation power
+
+    # Compute distortion M_k for each k
+    M_vals: Dict[int, float] = {}
+    for k in range(k_min - 1, k_max + 1):
+        if k < 1 or k >= n:
+            continue
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
+        unique = len(set(labels))
+        if unique < 2:
+            continue
+        W_k = _within_cluster_dispersion(X, labels)
+        M_vals[k] = W_k / (n * d)
+
+    ks = sorted(M_vals.keys())
+
+    # Compute J(k) for k = k_min..k_max
+    scores: List[Tuple[int, float]] = []
+    for k in ks:
+        if k < k_min:
+            continue
+        M_k = M_vals.get(k)
+        M_km1 = M_vals.get(k - 1)
+        if M_k is None or M_km1 is None:
+            continue
+        if M_k <= 0 or M_km1 <= 0:
+            continue
+        jump_val = M_k ** (-Y) - M_km1 ** (-Y)
+        if not np.isfinite(jump_val):
+            continue
+        scores.append((k, max(0.0, jump_val)))
+
+    if not scores:
+        return {"k_hat": k_min, "scores": [], "best_score": None}
+
+    best_k, best_score = max(scores, key=lambda x: x[1])
+    return {"k_hat": best_k, "scores": scores, "best_score": best_score}
+
+
+# ---------------------------------------------------------------------------
+# j. McClain-Rao Index (McClain & Rao, 1975)
+# ---------------------------------------------------------------------------
+
+def mcclain_rao_cvi(
+    X: np.ndarray,
+    k_range: Tuple[int, int] = (2, 20),
+    random_state: int = 42,
+) -> Dict:
+    """McClain-Rao index (McClain & Rao, 1975).
+
+    MR = mean_within_distance / mean_between_distance
+
+    Lower values indicate better clustering (compact within, well-separated).
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_samples, n_features)
+    k_range : tuple (min, max), default=(2, 20)
+    random_state : int, default=42
+
+    Returns
+    -------
+    dict with keys: k_hat, scores, best_score
+    """
+    k_min, k_max = k_range
+    scores: List[Tuple[int, float]] = []
+
+    for k in range(k_min, k_max + 1):
+        if k >= X.shape[0]:
+            continue
+        labels = KMeans(n_clusters=k, n_init=KMEANS_N_INIT, random_state=random_state).fit_predict(X)
+        unique_labels = np.unique(labels)
+        if len(unique_labels) < 2:
+            continue
+
+        # Within-cluster pairwise distances
+        within_dists = []
+        between_dists = []
+
+        cluster_points = {lbl: X[labels == lbl] for lbl in unique_labels}
+        cluster_centers = {}
+        for lbl, pts in cluster_points.items():
+            cluster_centers[lbl] = pts.mean(axis=0)
+
+        # Mean within-cluster distance
+        for lbl, pts in cluster_points.items():
+            if pts.shape[0] <= 1:
+                continue
+            pw = pdist(pts)
+            within_dists.extend(pw.tolist())
+
+        # Mean between-cluster distance (distance between cluster centers)
+        lbls_list = list(unique_labels)
+        for i in range(len(lbls_list)):
+            for j in range(i + 1, len(lbls_list)):
+                d = np.linalg.norm(cluster_centers[lbls_list[i]] - cluster_centers[lbls_list[j]])
+                between_dists.append(d)
+
+        if not within_dists or not between_dists:
+            continue
+
+        mean_within = np.mean(within_dists)
+        mean_between = np.mean(between_dists)
+        if mean_between == 0:
+            continue
+
+        mr = mean_within / mean_between
+        scores.append((k, mr))
+
+    if not scores:
+        return {"k_hat": k_min, "scores": [], "best_score": None}
+
+    best_k, _ = min(scores, key=lambda x: x[1])
+    best_score = min(s[1] for s in scores)
+    return {"k_hat": best_k, "scores": scores, "best_score": best_score}
+
+
+# ---------------------------------------------------------------------------
+# k. CVIWrapper — Unified interface
 # ---------------------------------------------------------------------------
 
 class CVIWrapper:
@@ -529,10 +821,12 @@ def get_all_indices(
     k_range: Tuple[int, int] = (2, 20),
     random_state: int = 42,
 ) -> List[CVIWrapper]:
-    """Return wrappers for all 6 baseline CVIs.
+    """Return wrappers for all 10 baseline CVIs.
 
     CBV is intentionally excluded — it will be registered separately
     from its own module.
+    DUD Index is excluded from most comparisons (monotonic, not designed
+    for k-estimation) unless explicitly requested.
 
     Parameters
     ----------
@@ -550,4 +844,8 @@ def get_all_indices(
         CVIWrapper(gap_cvi, "Gap Statistic", k_range, random_state),
         CVIWrapper(dunn_cvi, "Dunn Index", k_range, random_state),
         CVIWrapper(dud_cvi, "DUD Index", k_range, random_state),
+        CVIWrapper(hartigan_cvi, "Hartigan", k_range, random_state),
+        CVIWrapper(kl_cvi, "KL Index", k_range, random_state),
+        CVIWrapper(jump_cvi, "Jump Statistic", k_range, random_state),
+        CVIWrapper(mcclain_rao_cvi, "McClain-Rao", k_range, random_state),
     ]
