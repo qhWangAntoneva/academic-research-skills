@@ -5,12 +5,11 @@ from typing import Optional, Tuple
 
 import numpy as np
 from critband import (
-    bimodality_strength,
     critical_bandwidth,
     silverman_bandwidth,
     silverman_test,
 )
-from utils.weighting import weighted_k_vote
+from utils.weighting import compute_dimension_weights, weighted_k_vote
 
 
 class CBVIndex:
@@ -32,7 +31,7 @@ class CBVIndex:
         Significance level for the Silverman test.
     random_state : int or None, default=None
         Random seed for reproducibility.
-    h_crit_tolerance : float, default=1.1
+    h_crit_tolerance : float, default=1.3
         Multiplier on the Silverman bandwidth threshold. A value >1.0
         relaxes ``h_crit < tolerance * h_silver``, reducing false
         negatives when h_crit at the true k is slightly above h_silver.
@@ -56,6 +55,12 @@ class CBVIndex:
         Aggregation method for per-dimension k votes.
         One of ``'weighted_mean'``, ``'median'``, ``'mode'``.
         Passed through to ``weighted_k_vote()``.
+    weight_method : str, default='excess_mass'
+        Dimension weighting method. One of:
+        - ``'excess_mass'``: weight proportional to number of detected modes
+        - ``'bimodality_strength'``: legacy bimodality-only weighting
+        - ``'hybrid'``: geometric mean of excess_mass and bimodality_strength
+        Passed through to ``compute_dimension_weights()``.
     """
 
     def __init__(
@@ -64,10 +69,11 @@ class CBVIndex:
         n_boot: int = 999,
         alpha: float = 0.05,
         random_state: Optional[int] = None,
-        h_crit_tolerance: float = 1.1,
+        h_crit_tolerance: float = 1.3,
         mode: str = "bootstrap",
         fast: Optional[bool] = None,
         vote_method: str = "weighted_mean",
+        weight_method: str = "excess_mass",
     ) -> None:
         if k_range[0] < 2:
             raise ValueError("k_range[0] must be >= 2")
@@ -94,6 +100,7 @@ class CBVIndex:
         self.random_state = random_state
         self.h_crit_tolerance = h_crit_tolerance
         self.vote_method = vote_method
+        self.weight_method = weight_method
         self.k_hat_: Optional[int] = None
         self.dimension_votes_: Optional[np.ndarray] = None
         self.dimension_weights_: Optional[np.ndarray] = None
@@ -134,7 +141,6 @@ class CBVIndex:
 
         k_min, k_max = self.k_range
         votes = np.full(n_features, fill_value=k_min, dtype=np.float64)
-        weights = np.zeros(n_features, dtype=np.float64)
         p_values = np.full(n_features, fill_value=np.nan, dtype=np.float64)
         rng = np.random.default_rng(self.random_state)
 
@@ -143,7 +149,6 @@ class CBVIndex:
 
             # Skip constant dimensions
             if np.ptp(x_d) == 0.0:
-                weights[d] = 0.0
                 continue
 
             # Reference bandwidth for "small h_crit" threshold
@@ -157,14 +162,6 @@ class CBVIndex:
                 if converged and np.isfinite(h_crit) and h_crit < self.h_crit_tolerance * h_silver:
                     votes[d] = float(k)
                     break
-
-            # Dimension weight: bimodality strength
-            try:
-                bm = bimodality_strength(x_d)
-                weights[d] = bm.strength_score
-            except Exception as e:
-                print(f"WARNING: bimodality_strength failed for dim {d}: {e}")
-                weights[d] = 0.0
 
             # Silverman test p-value (H0: data has at most k_min modes)
             # Only computed in bootstrap mode — threshold mode is heuristic only
@@ -180,6 +177,9 @@ class CBVIndex:
                     p_values[d] = st.p_value
                 except Exception:
                     p_values[d] = np.nan
+
+        # Dimension weights: computed in bulk using selected weight method
+        weights = compute_dimension_weights(X, weight_method=self.weight_method, k_max=k_max)
 
         self.dimension_votes_ = votes
         self.dimension_weights_ = weights

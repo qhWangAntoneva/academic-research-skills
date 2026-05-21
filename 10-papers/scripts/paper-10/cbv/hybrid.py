@@ -6,8 +6,8 @@ import numpy as np
 
 from .index import CBVIndex
 from .spectral import CBVSpectral
-from critband import bimodality_strength, excess_mass
-from utils.weighting import compute_dimension_weights
+from critband import excess_mass
+from utils.weighting import compute_dimension_weights, multimodal_weight
 
 
 class CBVHybrid:
@@ -41,7 +41,7 @@ class CBVHybrid:
         Significance level for the Silverman test.
     random_state : int or None, default=None
         Random seed for reproducibility.
-    h_crit_tolerance : float, default=1.1
+    h_crit_tolerance : float, default=1.3
         Multiplier on the Silverman bandwidth threshold.
     mode : str, default='threshold'
         Operating mode: ``'threshold'`` (fast heuristic, no p-values) or
@@ -60,11 +60,16 @@ class CBVHybrid:
         If True, augment the combined vote pool with per-dimension
         ``excess_mass`` mode estimates.  Helps detect high-k structure
         that the sequential critical-bandwidth test misses.
-    adaptive_tolerance : bool, default=True
+    adaptive_tolerance : bool, default=False
         If True, compute ``h_crit_tolerance`` from data dimensionality
-        instead of using the fixed value.  Tolerance increases with
-        ``n_features`` to compensate for 1D projection collapse in
-        high-dimensional spaces.
+        instead of using the fixed value. Uses inverse-exponential formula
+        ``1.0 + 0.5 * exp(-d/10)`` from P1-1 empirical calibration:
+        lower tolerance for higher dimensions (2D→1.41, 50D→1.03).
+    weight_method : str, default='excess_mass'
+        Dimension weighting method. One of:
+        - ``'excess_mass'``: weight proportional to number of detected modes
+        - ``'bimodality_strength'``: legacy bimodality-only weighting
+        - ``'hybrid'``: geometric mean of excess_mass and bimodality_strength
 
     Attributes
     ----------
@@ -106,14 +111,15 @@ class CBVHybrid:
         n_boot: int = 999,
         alpha: float = 0.05,
         random_state: Optional[int] = None,
-        h_crit_tolerance: float = 1.1,
+        h_crit_tolerance: float = 1.3,
         mode: str = "threshold",
         vote_method: str = "mode",
         n_components: int = 10,
         affinity: str = "nearest_neighbors",
         min_dim_weight: float = 0.15,
         use_excess_mass: bool = True,
-        adaptive_tolerance: bool = True,
+        adaptive_tolerance: bool = False,
+        weight_method: str = "excess_mass",
     ) -> None:
         if k_range[0] < 2:
             raise ValueError("k_range[0] must be >= 2")
@@ -131,6 +137,7 @@ class CBVHybrid:
         self.min_dim_weight = min_dim_weight
         self.use_excess_mass = use_excess_mass
         self.adaptive_tolerance = adaptive_tolerance
+        self.weight_method = weight_method
         self.k_hat_: Optional[int] = None
 
     def fit(self, X: np.ndarray) -> "CBVHybrid":
@@ -151,7 +158,7 @@ class CBVHybrid:
 
         # 0. Dimension pre-filtering: exclude near-zero bimodality dims
         if self.min_dim_weight > 0.0:
-            dim_weights = compute_dimension_weights(X)
+            dim_weights = compute_dimension_weights(X, weight_method=self.weight_method)
             keep = dim_weights >= self.min_dim_weight
             if np.sum(keep) >= 2:  # need at least 2 dims for CBV
                 X_fit = X[:, keep]
@@ -166,10 +173,13 @@ class CBVHybrid:
             self.n_dims_filtered_ = 0
             self.dim_filter_mask_ = None
 
-        # Step 5: Adaptive h_crit_tolerance — relax threshold for high-D data
+        # Step 5: Adaptive h_crit_tolerance — empirical formula from P1-1 calibration
+        # Low-D benefits from higher tolerance; high-D from stricter tolerance
+        # Formula: tolerance decreases with n_features
         if self.adaptive_tolerance:
             n_features_eff = X_fit.shape[1]
-            hct = 1.0 + 0.5 * (1.0 - np.exp(-n_features_eff / 15.0))
+            # tol = 1.0 + 0.5 * exp(-d/10): 2D→1.41, 5D→1.30, 10D→1.18, 20D→1.07, 50D→1.03
+            hct = 1.0 + 0.5 * np.exp(-n_features_eff / 10.0)
         else:
             hct = self.h_crit_tolerance
 
@@ -182,6 +192,7 @@ class CBVHybrid:
             h_crit_tolerance=hct,
             mode=self.mode,
             vote_method=self.vote_method,
+            weight_method=self.weight_method,
         )
         self.raw_index_.fit(X_fit)
         self.k_hat_raw_ = self.raw_index_.k_hat_
@@ -199,6 +210,7 @@ class CBVHybrid:
             vote_method=self.vote_method,
             n_components=self.n_components,
             affinity=self.affinity,
+            weight_method=self.weight_method,
         )
         self.spec_index_.fit(X_fit)
         self.k_hat_spectral_ = self.spec_index_.k_hat_
@@ -230,11 +242,9 @@ class CBVHybrid:
                         em_votes[d] = float(nm)
                 except Exception:
                     pass
-                try:
-                    bm = bimodality_strength(x_d)
-                    em_weights[d] = bm.strength_score
-                except Exception:
-                    em_weights[d] = 0.0
+                em_weights[d] = multimodal_weight(
+                    x_d, k_max=k_max, method=self.weight_method
+                )
             self.em_votes_ = em_votes
             self.em_weights_ = em_weights
             all_votes = np.concatenate([all_votes, em_votes])

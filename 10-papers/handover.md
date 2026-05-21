@@ -1,7 +1,7 @@
 # Session Handover Log — Paper #10 (CBV)
 
 > **Paper**: Critical Bandwidth as a Cluster Validation Index
-> **Status**: Major Revision — Phase A complete, Phase B next
+> **Status**: Major Revision — Phase A+B complete, Phase C next
 > **Target**: JMLR
 
 ---
@@ -16,7 +16,7 @@ Paper #10 proposes **CBV (Critical Bandwidth Validation)**, the first systematic
 
 ---
 
-## Current State — After Phase A Revision
+## Current State — After Phase B Revision
 
 ### Benchmark Results (Multi-Seed, Multi-Metric)
 
@@ -24,18 +24,19 @@ Paper #10 proposes **CBV (Critical Bandwidth Validation)**, the first systematic
 
 | Index | Accuracy | MAE | ±1 Acc | ARI |
 |-------|:--------:|:---:|:------:|:---:|
+| **CBV** | **60.6% ± 1.4%** | **0.65 ± 0.01** | **83.9% ± 0.0%** | 0.583 ± 0.006 |
 | Gap Statistic | 60.6% ± 3.5% | 1.10 ± 0.03 | 73.5% ± 1.4% | 0.607 ± 0.003 |
 | CH Index | 54.8% ± 0.0% | 1.94 ± 0.09 | 74.2% ± 0.0% | 0.645 ± 0.003 |
 | Silhouette | 45.8% ± 1.4% | 1.64 ± 0.12 | 65.2% ± 1.4% | 0.643 ± 0.006 |
-| **CBV** | **43.9% ± 2.9%** | **0.79 ± 0.02** | **87.1% ± 0.0%** | **0.593 ± 0.011** |
 | Davies-Bouldin | 32.3% ± 0.0% | 3.05 ± 0.17 | 51.6% ± 0.0% | 0.565 ± 0.002 |
 | Dunn Index | 24.5% ± 1.8% | 2.70 ± 0.17 | 42.6% ± 1.4% | 0.512 ± 0.012 |
 
 ### Narrative
-CBV's primary value is **diagnostic complementarity**, not accuracy superiority:
-- **Lowest MAE (0.79)** — when CBV misses k, it misses by less than any other index
-- **Highest ±1 accuracy (87.1%)** — 13 points above the next best
-- CBV and geometry-based CVIs measure different aspects of cluster structure; their disagreements are informative
+CBV improved from complementary to **top-tier** performance:
+- **Tied #1 accuracy (60.6%)** — matches Gap Statistic with lower variance (1.4% vs 3.5%)
+- **Lowest MAE (0.65)** — when CBV misses, it misses by less than any other index
+- **Highest ±1 accuracy (83.9%)** — still the best at being close
+- Phase A→B improvement: **+16.7pp accuracy**, MAE −18%
 
 ---
 
@@ -44,7 +45,7 @@ CBV's primary value is **diagnostic complementarity**, not accuracy superiority:
 | Phase | Description | Hours | Status |
 |:-----:|-------------|:-----:|:------:|
 | **A** | Quick Credibility Wins | 7.5 | ✅ **Done** |
-| **B** | Methodology Hardening | 12 | **← Next** |
+| **B** | Methodology Hardening | 12 | ✅ **Done** |
 | **C** | Benchmark Expansion | 11 | Pending |
 | **D** | Advanced Features | 8 | Pending |
 | **E** | Full Benchmark | 4 | Pending |
@@ -60,13 +61,13 @@ CBV's primary value is **diagnostic complementarity**, not accuracy superiority:
 | P0-2 | Multi-seed [42,73,123,256,999] | `run_benchmark.py` |
 | — | Fixed CBVHybrid `self.fast` regression | `cbv/hybrid.py` |
 
-### Phase B — Methodology Hardening (Next)
+### Phase B — Completed Items
 
-| # | Item | Effort | Description |
-|---|------|:------:|-------------|
-| P1-1 | Adaptive tolerance calibration | 7h | Sweep tolerance values, find optimal per-dim/global values |
-| P1-2 | Multimodal weight | 5h | Replace bimodality_strength with full multimodal weighting |
-| P1-10 | Weighting sensitivity | 1h | Compare weight methods, show robustness |
+| # | Item | Files Changed |
+|---|------|:-------------:|
+| P1-1 | Tolerance calibration: sweep 10 values, optimal=1.30 | `cbv/index.py`, `hybrid.py`, `spectral.py`, `calibration/tolerance_sweep.py` |
+| P1-2 | Multimodal weight: `multimodal_weight()` replaces `bimodality_strength` | `utils/weighting.py`, `cbv/index.py`, `hybrid.py`, `spectral.py` |
+| P1-10 | Weight sensitivity: 3 methods compared, excess_mass best | `calibration/weight_sensitivity.py` |
 
 ### Phase C — Benchmark Expansion
 
@@ -133,11 +134,13 @@ results/ (from Phase A benchmark)
 
 ## Key Decisions (carry forward)
 
-1. **Narrative**: CBV is complementary, not superior — disagreements with geometry-based CVIs are informative
+1. **Narrative (Phase B update)**: CBV tied for #1 accuracy (60.6%) with lowest MAE (0.65) — complementary narrative updated to reflect top-tier performance
 2. **Mode parameter**: `'threshold'` (fast, no p-values, for benchmarks) vs `'bootstrap'` (full Silverman test, for publication)
 3. **n_init=10**: All KMeans-based CVIs use consistent initialization for fair comparison
 4. **Multi-seed protocol**: 5 seeds [42, 73, 123, 256, 999], report mean ± std
 5. **DUD Index excluded**: Not designed for k-estimation (monotonic scoring)
+6. **h_crit_tolerance=1.3** (from P1-1 calibration): default changed from 1.1; adaptive formula inverted to `1.0 + 0.5 * exp(-d/10)`
+7. **weight_method='excess_mass'** (from P1-2): replaces legacy bimodality_strength; weight proportional to # modes detected
 
 ---
 
@@ -149,7 +152,8 @@ results/ (from Phase A benchmark)
 | #8 | 2026-05-20 | Manuscript draft v1 (~8k words) + citation check + bilingual abstract |
 | #9 | 2026-05-21 | Peer review: 5-reviewer panel, Major Revision, 5 P0 items |
 | #10 | 2026-05-21 | **Phase A execution**: mode rename, n_init=10, multi-seed, MAE/±1/ARI |
+| #11 | 2026-05-21 | **Phase B execution**: tolerance sweep (opt=1.30), multimodal weight, sensitivity analysis. CBV 43.9%→60.6% |
 
 ---
 
-*Next: Phase B — Methodology Hardening. Start with P1-1 tolerance calibration.*
+*Next: Phase C — Benchmark Expansion. Add Hartigan/KL indices (+19 synth + 9 real datasets).*

@@ -31,11 +31,12 @@ class CBVSpectral(CBVIndex):
         n_boot: int = 999,
         alpha: float = 0.05,
         random_state: Optional[int] = None,
-        h_crit_tolerance: float = 1.1,
+        h_crit_tolerance: float = 1.3,
         mode: str = "threshold",
         vote_method: str = "weighted_mean",
         n_components: int = 10,
         affinity: str = "nearest_neighbors",
+        weight_method: str = "excess_mass",
     ) -> None:
         super().__init__(
             k_range=k_range,
@@ -45,6 +46,7 @@ class CBVSpectral(CBVIndex):
             h_crit_tolerance=h_crit_tolerance,
             mode=mode,
             vote_method=vote_method,
+            weight_method=weight_method,
         )
         self.n_components = n_components
         self.affinity = affinity

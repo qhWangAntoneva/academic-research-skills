@@ -5,22 +5,20 @@
 
 ---
 
-## ✅ 已完成 (Preliminary Pipeline)
+## ✅ 已完成
 
 | Phase | Key Result | Status |
 |:-----:|------------|:------:|
 | 0-5 | Full pipeline: research → architecture → benchmark (~45%) → manuscript → citation check → abstracts | Done |
 | 6 | Peer review: EIC Major Revision, Chacón 5/10, Arbelaitz 6/10, Hennig 7/10, DA 2 CRITICAL | Done |
-| A | Quick credibility: `mode` rename, `n_init=10`, multi-seed (5), MAE/±1/ARI metrics | **Done** |
+| **A** | Quick credibility: `mode` rename, `n_init=10`, multi-seed (5), MAE/±1/ARI metrics | **Done** |
+| **B** | Methodology hardening: tolerance calibration (tol=1.30), multimodal weighting (excess_mass) | **Done** |
 
-### Final Pre-Revision Benchmark (Single Seed)
-- 31 datasets (25 synthetic + 6 real), 7 CV indices, k=(2,10), threshold mode
-- CBV: 45.2% (14/31), tied 3rd/6 with Silhouette
-- Friedman chi²=106.66, p<0.0001; CBV vs Silhouette Nemenyi p=0.0116*
-
-### Multi-Seed Benchmark (Post-Phase A)
+### Multi-Seed Benchmark (Post-Phase B)
 - 5 seeds [42, 73, 123, 256, 999], mean ± std across all metrics
-- CBV: 43.9% ± 2.9% accuracy, **MAE=0.79** (best), **±1 Acc=87.1%** (best), ARI=0.593
+- **CBV: 60.6% ± 1.4% accuracy** (tied #1 with Gap), **MAE=0.65** (best), ±1 Acc=83.9% (best), ARI=0.583
+- Phase A→B improvement: **accuracy +16.7pp**, MAE −18%, std reduced 50%
+- CBV goes from 3rd/6 → Tied-1st/6 in exact-match accuracy
 
 ---
 
@@ -35,13 +33,15 @@
 | P0-3 | Add MAE, ±1 Acc, ARI | ✅ Done | `run_benchmark.py` |
 | P0-2 | Multi-seed [42,73,123,256,999] | ✅ Done | `run_benchmark.py` |
 
-### Phase B: Methodology Hardening ← NEXT
+### Phase B: Methodology Hardening ✅
 
 | # | Item | Effort | Priority | Depends On |
 |---|------|:------:|:--------:|:----------:|
 | P1-1 | Adaptive tolerance empirical calibration | 7h | High | — |
 | P1-2 | Bimodality weighting → multimodal weight | 5h | High | — |
 | P1-10 | Weighting scheme sensitivity analysis | 1h | Medium | P1-2 |
+
+**Result**: tolerance=1.30 (from 1.1), weight_method='excess_mass'. CBV accuracy 43.9%→60.6%.
 
 **Inputs needed**: `cbv/index.py`, `cbv/hybrid.py`, `run_benchmark.py`
 
@@ -91,9 +91,9 @@
 ```
 Phase A (Quick Wins)    ← DONE
      ↓
-Phase B (Methodology)   ← NEXT
+Phase B (Methodology)   ← DONE
      ↓
-Phase C (Benchmark)     ← parallel with D
+Phase C (Benchmark)     ← NEXT
 Phase D (Advanced Feat.) ← parallel with C
      ↓
 Phase E (Full Run)      ← after C+D
@@ -103,11 +103,11 @@ Phase F (Manuscript)    ← final, uses all outputs
 
 ## Key Results to Carry Forward
 
-**Core narrative**: CBV is not the best at exact match (43.9%), but has the **lowest MAE (0.79)** and **highest ±1 accuracy (87.1%)** — supporting "diagnostic complementarity" thesis.
+**Core narrative**: CBV is now tied for #1 in exact-match accuracy (60.6%) while maintaining the **lowest MAE (0.65)** and **highest ±1 accuracy (83.9%)** — no longer just "complementary," CBV matches the best geometry-based CVIs while providing unique diagnostic value.
 
-**Failure modes** (target for Phase B/C fixes):
+**Failure modes** (target for Phase C/D fixes):
 - Non-convex shapes: 6 failures (spectral fusion helps but not fully)
 - High-k underestimation (k≥5): 5 failures (excess_mass layer, target)
-- Tight-blob overestimation: 2 failures (tolerance calibration, P1-1)
-- Noise dimension overwhlem: 2 failures (dim pre-filtering exists but may need tuning)
+- Tight-blob overestimation: 2 failures (tolerance calibration P1-1 fixed partially)
+- Noise dimension overwhelm: 2 failures (dim pre-filtering exists but may need tuning)
 - Real dataset signal loss: 2 failures (addressed by Phase C expansion)

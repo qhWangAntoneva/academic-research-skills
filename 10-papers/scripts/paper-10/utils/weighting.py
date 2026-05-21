@@ -3,21 +3,96 @@ from __future__ import annotations
 from typing import Optional
 
 import numpy as np
-from critband import bimodality_strength
+from critband import bimodality_strength, excess_mass
 
 
-def compute_dimension_weights(X: np.ndarray) -> np.ndarray:
+def multimodal_weight(
+    x_d: np.ndarray,
+    k_max: int = 10,
+    method: str = "excess_mass",
+) -> float:
     """
-    Compute bimodality-strength weights for each dimension.
+    Compute a multimodal weight for a single dimension.
 
-    Uses ``critband.bimodality_strength`` which returns a result with a
-    ``.strength_score`` attribute (0 = unimodal / noise, higher = more
-    structured).  Constant dimensions receive weight 0.
+    Unlike ``bimodality_strength`` (which only measures bimodality), this
+    function weights dimensions by the number of modes detected, making it
+    sensitive to higher-order multimodality.
+
+    Parameters
+    ----------
+    x_d : np.ndarray of shape (n_samples,)
+        1D data for a single dimension.
+    k_max : int, default=10
+        Maximum number of modes to consider.
+    method : str, default='excess_mass'
+        Weighting method:
+
+        - ``'excess_mass'``: weight = min(1.0, n_modes / k_max).
+          Directly proportional to the number of detected modes.
+        - ``'bimodality_strength'``: legacy ``critband.bimodality_strength``
+          score (only sensitive to bimodal vs unimodal).
+        - ``'hybrid'``: geometric mean of excess_mass weight and
+          bimodality strength.
+
+    Returns
+    -------
+    float
+        Weight in [0, 1].
+    """
+    if np.ptp(x_d) == 0.0:
+        return 0.0
+
+    if method == "bimodality_strength":
+        try:
+            bm = bimodality_strength(x_d)
+            return float(bm.strength_score)
+        except Exception:
+            return 0.0
+
+    # excess_mass mode: count modes directly
+    try:
+        em = excess_mass(x_d, n_modes_max=k_max, n_boot=0)
+        n_modes = em.n_modes_estimated
+        em_weight = min(1.0, n_modes / k_max)
+    except Exception:
+        em_weight = 0.0
+
+    if method == "excess_mass":
+        return em_weight
+
+    # hybrid: geometric mean of excess_mass and bimodality strength
+    if method == "hybrid":
+        try:
+            bm = bimodality_strength(x_d)
+            bs = float(bm.strength_score)
+        except Exception:
+            bs = 0.0
+        if em_weight > 0 and bs > 0:
+            return float(np.sqrt(em_weight * bs))
+        return max(em_weight, bs)
+
+    raise ValueError(
+        f"Unknown method '{method}'. "
+        "Use 'excess_mass', 'bimodality_strength', or 'hybrid'."
+    )
+
+
+def compute_dimension_weights(
+    X: np.ndarray,
+    weight_method: str = "excess_mass",
+    k_max: int = 10,
+) -> np.ndarray:
+    """
+    Compute multimodal weights for each dimension.
 
     Parameters
     ----------
     X : np.ndarray of shape (n_samples, n_features)
         Input data.
+    weight_method : str, default='excess_mass'
+        Weighting method passed to :func:`multimodal_weight`.
+    k_max : int, default=10
+        Maximum number of modes (used by excess_mass method).
 
     Returns
     -------
@@ -29,14 +104,9 @@ def compute_dimension_weights(X: np.ndarray) -> np.ndarray:
     weights = np.zeros(n_features, dtype=np.float64)
 
     for d in range(n_features):
-        x_d = X[:, d]
-        if np.ptp(x_d) == 0.0:
-            continue
-        try:
-            bm = bimodality_strength(x_d)
-            weights[d] = bm.strength_score
-        except Exception:
-            weights[d] = 0.0
+        weights[d] = multimodal_weight(
+            X[:, d], k_max=k_max, method=weight_method
+        )
 
     return weights
 
