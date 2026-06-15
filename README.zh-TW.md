@@ -305,6 +305,10 @@ https://github.com/Imbad0202/academic-research-skills
 
 ## 更新紀錄
 
+### v3.12.1（2026-06-15）— 審稿回覆分流模式（PR #433 整合）
+
+> 一個 patch release，依 ARS 的模式化架構，把一份外部貢獻中真正具新意的部分收進既有 skill 成為模式。**新模式：** `deep-research` `three-way-scan` —— 介於 `quick` 與 `lit-review` 之間的輕量 WHY/HOW/WHAT 論文比較分流，產出逐論文短清單加跨論文統合（`deep-research` 2.9.4 → 2.10.0）；`academic-paper` `rebuttal-audit` —— 對作者既有的 rebuttal／回覆草稿，比對審稿意見做獨立的諮詢式 QA（逐條覆蓋表 + 缺口清單 + 語氣／證據／誤讀風險旗標），它不產生任何內容，且獨立呼叫時明確抑制 Schema 11／Material Passport 寫入／`ready_to_submit`（由帶 mutation 覆蓋的 `check_rebuttal_audit_guard()` lint 強制）；另含 `revision-coach` 範圍擴展到反駁／不同意姿態與非期刊情境，以及 `/ars-3w` + `/ars-rebuttal-audit` 斜線指令。依輸入形狀路由：審稿意見加草稿 → `rebuttal-audit`；僅意見 → `revision-coach`。整合自 [@Yaobin29](https://github.com/Yaobin29) 的 [PR #433](https://github.com/Imbad0202/academic-research-skills/pull/433)。Suite 模式數 25 → 27（仍 4 個 skill）。逐 issue 細節見 `CHANGELOG.md`。
+
 ### v3.12.0（2026-06-08）— Kong 自動研究功能線：實驗來源、圖表保真、跨論文矛盾、部分證據拆解
 
 > 一個 minor release，落地 Kong et al.（2026，arXiv:2605.18661）自動研究功能線，以及部分證據陷阱的拆解工作，每項都已各自審查並 merge。**新功能：** 實驗來源登錄 + 宣稱對實驗對齊 —— 為實驗支撐的宣稱建立 schema-first 的證據帳本層，只做登錄與對齊（學者在外部跑實驗，ARS 從不執行）（#260）；圖表保真 gate，查驗 caption 的詮釋是否從資料推得、論文是否拿該圖表佐證它真正支撐的宣稱（#261）；結構化的跨論文矛盾盤點，把已評估的論文對列舉出來供學者確認（#262）；以及在引用判定（#213）與編輯統合（#214）兩層都先做子宣稱拆解再判定，於兩層收斂 §F.3.2 部分證據陷阱。**引導與詮釋層：** 對產報告的審稿人加上精簡輸出 + 抗壓邊界強化（#274）；同源／rubric-aware 校準的認識論註記（#273）；把檢索內容的指令／資料邊界訂為常設原則（#367）。**負面範圍：** Kong META（#255）收尾，在 `POSITIONING.md` 加「拒絕機制」段落列舉 ARS 不做的五種自主機制，外加兩份 Tier D 設計教訓文件。**發版紀律 lint：** version-consistency 不變量 5–7（#357）與 ARCHITECTURE 元件版號稽核（#345）。另含跨模型 grounding guard（#346 / #349 / #351）、引用 gate 快取鍵與 rationale 上界（#359 / #360 / #361）、eval 黃金集（#250）、ACL/EMNLP 揭露重新接地（#242）等正確性修正。新增的 schema、manifest 欄位與所有不變量皆為增量、向後相容。`academic-pipeline` 隨 suite 升至 v3.12.0；其餘三個 skill 版號不變。逐 issue 細節見 `CHANGELOG.md`。

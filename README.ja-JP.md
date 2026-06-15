@@ -322,6 +322,10 @@ https://github.com/Imbad0202/academic-research-skills
 
 ## Changelog
 
+### v3.12.1 (2026-06-15) — 査読応答トリアージモード（PR #433 統合）
+
+> ARS のモードベース・アーキテクチャに従い、外部コントリビューションの真に新規な部分を既存スキルのモードとして取り込んだ patch release。**新モード：** `deep-research` `three-way-scan` —— `quick` と `lit-review` の中間に位置する軽量な WHY/HOW/WHAT 論文比較トリアージ。論文ごとのショートリストと論文間の統合を生成（`deep-research` 2.9.4 → 2.10.0）。`academic-paper` `rebuttal-audit` —— 著者の既存リバッタル／応答ドラフトを査読コメントと突き合わせる独立アドバイザリ QA（コメントごとのカバレッジ表 + ギャップリスト + トーン／根拠／誤読のリスクフラグ）。何も生成せず、スタンドアロン実行時は Schema 11／Material Passport 書き込み／`ready_to_submit` を明示的に抑制（mutation カバレッジ付きの `check_rebuttal_audit_guard()` lint で強制）。加えて `revision-coach` のスコープを反論／不同意の姿勢と非ジャーナル文脈に拡張、`/ars-3w` + `/ars-rebuttal-audit` スラッシュコマンドを追加。入力形状でルーティング：査読コメント AND ドラフト → `rebuttal-audit`、コメントのみ → `revision-coach`。[@Yaobin29](https://github.com/Yaobin29) の [PR #433](https://github.com/Imbad0202/academic-research-skills/pull/433) から統合。スイートのモード数 25 → 27（スキルは 4 つのまま）。issue ごとの詳細は `CHANGELOG.md` を参照。
+
 ### v3.12.0 (2026-06-08) — Kong 自動研究フィーチャートラック：実験来歴・図表フィデリティ・論文間矛盾・部分証拠の分解
 
 > **[machine-translated]** この項目は機械翻訳であり、ネイティブ contributor によるレビュー待ちです。正本は英語版 CHANGELOG です。
