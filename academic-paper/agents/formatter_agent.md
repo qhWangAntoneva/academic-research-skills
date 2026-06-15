@@ -103,10 +103,13 @@ Common journal requirements to check:
 ## Format Profile (#439) — declared layout, NOT-DECLARED → current default
 
 **Guard (FIRST — load-bearing for byte-equivalence, design §5a):** if the Paper
-Configuration Record has **no `Format Profile` row** (or the row resolves to no path),
-**skip this entire section** — do not read, mention, or branch on any format profile, and
-render exactly as a pre-#439 run for that output. The absence of the row is the signal; a
-run with no declared profile is byte-identical to before this feature existed.
+Configuration Record has **no `Format Profile` row**, **skip this entire section** — do not
+read, mention, or branch on any format profile, and render exactly as a pre-#439 run for
+that output. **Row absence is the ONE not-declared signal** (intake writes no row when the
+follow-up is declined, never an empty/`absent` row); a present-but-empty or no-path row is
+therefore **malformed**, not a second "not declared" state — treat it as the fail-closed
+"path present, file missing" case below (STOP), not as a silent skip. A run with no declared
+profile is byte-identical to before this feature existed.
 
 When the PCR **does** carry a `Format Profile` path, the profile is a scholar-declared
 layout the renderer follows. It validates against

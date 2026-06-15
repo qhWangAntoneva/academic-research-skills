@@ -56,6 +56,13 @@ def test_fixed_pt_conditional_removed_fails(schema):
     assert check_fixed_pt_conditional(mutated), "removing the fixed_pt conditional must fire"
 
 
+def test_fixed_pt_conditional_mode_not_required_fails(schema):
+    """Drop required:[mode] → {fixed_pt:20} with no mode becomes valid → check must fire (codex P2-1)."""
+    mutated = copy.deepcopy(schema)
+    mutated["properties"]["line_spacing"].pop("required", None)
+    assert check_fixed_pt_conditional(mutated), "dropping required:[mode] must fire"
+
+
 # --- invariant 3: no provenance machinery -----------------------------------
 
 def test_no_provenance_real_tree_passes(schema):

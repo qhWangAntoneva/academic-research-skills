@@ -88,6 +88,8 @@ def check_fixed_pt_conditional(schema: dict) -> list[str]:
         errors.append("line_spacing double WITH fixed_pt must be INVALID (fixed_pt only with mode==fixed_pt)")
     if valid({"line_spacing": {"mode": "fixed_pt"}}):
         errors.append("line_spacing fixed_pt WITHOUT fixed_pt must be INVALID (fixed_pt required when mode==fixed_pt)")
+    if valid({"line_spacing": {"fixed_pt": 20}}):
+        errors.append("line_spacing WITHOUT mode must be INVALID (mode is required) — guards against dropping required:[mode]")
     return errors
 
 
@@ -194,8 +196,25 @@ def check_formatter_wiring(text: str) -> list[str]:
 
 
 STEP5_HEADING = "### Step 5: Output Format"
+# The production Paper Configuration Record H2 — matched exactly so the Plan Mode PCR
+# ("## Paper Configuration Record (Plan Mode)", which is exempt and carries no row) and
+# the "### Paper Configuration Record" intro sub-heading are both excluded.
+PCR_HEADING_RE = re.compile(r"^## Paper Configuration Record\s*$", re.MULTILINE)
 # Structural table-row match for the PCR Format Profile row (mirrors check_392's PCR_ROW_RE).
 PCR_FORMAT_ROW_RE = re.compile(r"^\|\s*\*\*Format Profile\*\*\s*\|", re.MULTILINE)
+
+
+def _h2_block(text: str, heading_re: "re.Pattern[str]") -> str | None:
+    """The block from an H2 heading (located by regex) to the next `## ` heading.
+
+    Used to scope the production PCR table, matched exactly so the Plan Mode PCR variant
+    and the intro sub-heading are excluded.
+    """
+    m = heading_re.search(text)
+    if m is None:
+        return None
+    nxt = re.compile(r"^## \S", re.MULTILINE).search(text, m.end())
+    return text[m.start() : nxt.start()] if nxt else text[m.start():]
 
 
 def _step_block(text: str, heading: str) -> str | None:
@@ -231,10 +250,12 @@ def check_intake_wiring(text: str) -> list[str]:
             "Step 5 follow-up must state a declined run writes NO PCR Format Profile row "
             "(Invariant 7 byte-equivalence — an explicit `absent` would perturb)"
         )
-    # the PCR row exists as a real table row (structural, not a prose mention)
-    if not PCR_FORMAT_ROW_RE.search(text):
-        errors.append("PCR table must carry a structural `| **Format Profile** |` row")
-    if "ROW OMITTED ENTIRELY" not in text:
+    # the PCR row exists as a real table row, scoped to the production PCR block
+    # (not the Plan Mode PCR, and not a stray row elsewhere in the file)
+    pcr_block = _h2_block(text, PCR_HEADING_RE)
+    if pcr_block is None or not PCR_FORMAT_ROW_RE.search(pcr_block):
+        errors.append("production PCR block must carry a structural `| **Format Profile** |` row")
+    elif "ROW OMITTED ENTIRELY" not in pcr_block:
         errors.append("PCR Format Profile row must document that it is omitted when declined")
     return errors
 
