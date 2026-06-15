@@ -240,6 +240,17 @@ deferred, and none is presented to users as functional before C lands.
 
 ## 10. Open items for the implementation round
 
+- **Deterministic format-profile reader (depth gap vs `venue_profile`, recorded post-B/C
+  review).** §5b fail-closed lives in formatter PROSE only — at ship there is no
+  deterministic script that resolves the path, schema-validates a *user's* declared profile,
+  and enforces the workspace-path boundary; CI validates only the synthetic example fixture.
+  The named twin `venue_profile` IS deterministically enforced (`verify_submission_package.py`
+  `--venue-profile` → `_validate_venue_profile` → schema-validate → fail-closed). So §5b's
+  guarantee is prose-tier, one notch below `venue_profile`. This is the correct ceiling for
+  this slice (the formatter is an LLM agent; the renderer mechanism was scoped deferred), but
+  the parity target is a thin `read_format_profile.py` (resolve → schema-validate → path
+  boundary → STOP/OK) that the formatter prose STAMPS rather than evaluates, mirroring #394's
+  STAMP-ONLY formatter over a deterministic decision. A future slice, not a B/C blocker.
 - Final field set in §4 (the draft is deliberately minimal — add only fields with a
   concrete declared use case; resist speculative layout knobs, per the no-unrequested-
   abstraction discipline).

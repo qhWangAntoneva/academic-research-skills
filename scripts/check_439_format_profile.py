@@ -29,13 +29,15 @@ fires when its guarded property is broken.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 import yaml
 from jsonschema import Draft202012Validator
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _skill_lint import check_section_literals  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -191,18 +193,47 @@ def check_formatter_wiring(text: str) -> list[str]:
     })
 
 
+STEP5_HEADING = "### Step 5: Output Format"
+# Structural table-row match for the PCR Format Profile row (mirrors check_392's PCR_ROW_RE).
+PCR_FORMAT_ROW_RE = re.compile(r"^\|\s*\*\*Format Profile\*\*\s*\|", re.MULTILINE)
+
+
+def _step_block(text: str, heading: str) -> str | None:
+    """The block from `heading` to the next heading of <= its level (None if absent).
+
+    Scopes literal checks to the intake step rather than the whole 330-line file, so a
+    rule moved out of Step 5 fails the lint instead of passing on a stray match elsewhere.
+    """
+    start = text.find(heading)
+    if start < 0:
+        return None
+    level = heading.split(" ")[0]  # e.g. '###'
+    pattern = re.compile(rf"^#{{2,{len(level)}}}\s", re.MULTILINE)
+    m = pattern.search(text, start + len(heading))
+    return text[start : m.start()] if m else text[start:]
+
+
 def check_intake_wiring(text: str) -> list[str]:
-    """Invariant 7: the intake Step 5 follow-up carries the write-nothing-when-declined rule."""
+    """Invariant 7: the intake Step 5 follow-up carries the write-nothing-when-declined rule.
+
+    Scoped to the Step 5 block (not whole-file substring), so the byte-equivalence rule
+    cannot pass the lint after being moved out of the follow-up; the PCR row is asserted
+    structurally (a real table row), not by a prose fragment.
+    """
     errors: list[str] = []
-    if "Format-profile follow-up (#439" not in text:
-        errors.append("intake_agent.md missing the #439 Format-profile follow-up at Step 5")
+    step5 = _step_block(text, STEP5_HEADING)
+    if step5 is None or "Format-profile follow-up (#439" not in step5:
+        errors.append("intake_agent.md missing the #439 Format-profile follow-up under Step 5")
         return errors
-    # the byte-equivalence discipline (declined => no PCR row at all) is load-bearing
-    if "no PCR `Format Profile` row at all" not in text:
+    # the byte-equivalence discipline (declined => no PCR row at all) is load-bearing, in-step
+    if "no PCR `Format Profile` row at all" not in step5:
         errors.append(
-            "intake follow-up must state a declined run writes NO PCR Format Profile row "
+            "Step 5 follow-up must state a declined run writes NO PCR Format Profile row "
             "(Invariant 7 byte-equivalence — an explicit `absent` would perturb)"
         )
+    # the PCR row exists as a real table row (structural, not a prose mention)
+    if not PCR_FORMAT_ROW_RE.search(text):
+        errors.append("PCR table must carry a structural `| **Format Profile** |` row")
     if "ROW OMITTED ENTIRELY" not in text:
         errors.append("PCR Format Profile row must document that it is omitted when declined")
     return errors

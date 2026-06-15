@@ -124,7 +124,7 @@ fix the profile** rather than rendering under an ambiguous contract:
 | Path present, file missing / unreadable | STOP; report the missing path. Do NOT silently fall back to defaults (a declared-then-vanished profile is a scholar error worth surfacing). |
 | File present, invalid YAML | STOP; report the parse error + path. |
 | YAML valid, schema-INVALID | STOP; report the schema violation (same contract CI enforces). |
-| Path escaping the run workspace | STOP; reject (consistent with the existing path-boundary posture, #310). |
+| Path escaping the run workspace | STOP; reject — a format-profile path must resolve inside the run workspace. |
 
 ### Apply it — declared fields only, best-effort per target (design §5c)
 
@@ -144,9 +144,12 @@ fix the profile** rather than rendering under an ambiguous contract:
 
 ### Conflict precedence — venue compliance wins (design §3a)
 
-The layout profile is a **rendering preference**. Where a declared layout field would push
-the manuscript past a declared `venue_profile` limit (e.g. larger font / wider spacing /
-bigger margins inflating page count past a page limit), apply the **venue-compliant** value,
+The layout profile is a **rendering preference** — the same class as any user preference
+under the existing "journal requirement > user preference" rule (see Template conflict
+handling below); this is that one principle applied to layout. Where a declared layout field
+would push the manuscript past a declared `venue_profile` limit (e.g. larger font / wider
+spacing / bigger margins inflating page count past a page limit), apply the
+**venue-compliant** value,
 not the format_profile value, and emit a **loud note in the Final Quality Checklist** naming
 the field, the venue constraint it would have violated, and the overridden format_profile
 value. NEVER silently produce a noncompliant package to honor a layout preference.

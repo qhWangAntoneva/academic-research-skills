@@ -138,6 +138,21 @@ def test_formatter_wiring_dropped_venue_precedence_fails(formatter_text):
     assert check_formatter_wiring(mutated), "dropping venue precedence must fire"
 
 
+def test_formatter_wiring_dropped_failclosed_fails(formatter_text):
+    mutated = formatter_text.replace("fail closed BEFORE formatting", "handle path issues")
+    assert check_formatter_wiring(mutated), "dropping the fail-closed rule must fire"
+
+
+def test_formatter_wiring_dropped_no_inference_fails(formatter_text):
+    mutated = formatter_text.replace("Never infer a missing layout field", "Guess layout")
+    assert check_formatter_wiring(mutated), "dropping the no-inference rule must fire"
+
+
+def test_formatter_wiring_dropped_best_effort_fails(formatter_text):
+    mutated = formatter_text.replace("best-effort per output target", "always applied")
+    assert check_formatter_wiring(mutated), "dropping the best-effort rule must fire"
+
+
 # --- invariant 7: intake wiring ---------------------------------------------
 
 def test_intake_wiring_real_tree_passes(intake_text):
@@ -151,6 +166,12 @@ def test_intake_wiring_missing_followup_fails():
 def test_intake_wiring_dropped_byte_equiv_rule_fails(intake_text):
     mutated = intake_text.replace("no PCR `Format Profile` row at all", "an absent row")
     assert check_intake_wiring(mutated), "dropping the write-nothing rule must fire"
+
+
+def test_intake_wiring_dropped_pcr_row_fails(intake_text):
+    """Remove the structural PCR table row → check must fire (not just the prose mention)."""
+    mutated = intake_text.replace("| **Format Profile** |", "| Format Profile |")
+    assert check_intake_wiring(mutated), "losing the structural PCR Format Profile row must fire"
 
 
 # --- schema behavior: the contract a real profile must satisfy --------------
