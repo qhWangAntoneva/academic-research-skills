@@ -15,6 +15,7 @@ from jsonschema import Draft202012Validator
 from check_439_format_profile import (
     FORMATTER,
     INTAKE,
+    POSITIONING,
     SCHEMA,
     check_cut_fields_stay_cut,
     check_example_fixture,
@@ -22,6 +23,7 @@ from check_439_format_profile import (
     check_formatter_wiring,
     check_intake_wiring,
     check_no_provenance,
+    check_positioning_boundary,
     check_schema_valid,
 )
 
@@ -179,6 +181,27 @@ def test_intake_wiring_dropped_pcr_row_fails(intake_text):
     """Remove the structural PCR table row → check must fire (not just the prose mention)."""
     mutated = intake_text.replace("| **Format Profile** |", "| Format Profile |")
     assert check_intake_wiring(mutated), "losing the structural PCR Format Profile row must fire"
+
+
+# --- invariant 8: POSITIONING boundary --------------------------------------
+
+@pytest.fixture(scope="module")
+def positioning_text():
+    return POSITIONING.read_text(encoding="utf-8")
+
+
+def test_positioning_boundary_real_tree_passes(positioning_text):
+    assert check_positioning_boundary(positioning_text) == []
+
+
+def test_positioning_boundary_missing_note_fails():
+    assert check_positioning_boundary("# positioning without the boundary"), \
+        "a POSITIONING without the #439 boundary note must fire"
+
+
+def test_positioning_boundary_dropped_review_criterion_fails(positioning_text):
+    mutated = positioning_text.replace("Review criterion:", "Note:")
+    assert check_positioning_boundary(mutated), "dropping the Review criterion must fire"
 
 
 # --- schema behavior: the contract a real profile must satisfy --------------

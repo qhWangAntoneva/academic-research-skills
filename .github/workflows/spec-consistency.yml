@@ -325,13 +325,16 @@ jobs:
           PYTHONPATH: .
         run: python scripts/check_394_submission_policy.py
 
-      - name: "#439 format_profile contract lint (Slice A)"
-        # Guards the scholar-declared layout profile schema: valid standalone
-        # Draft 2020-12 schema with a locked root (Invariant 11), the
-        # line_spacing.fixed_pt conditional (required iff mode==fixed_pt,
-        # forbidden otherwise), NO venue_profile provenance machinery leaked in
-        # (declared-only is downgraded to docs, design §3), and the cut fields
-        # staying cut (profile_name / heading_font / caption.bold, design §4).
+      - name: "#439 format_profile contract lint"
+        # Guards the scholar-declared layout profile feature (8 invariants):
+        # valid standalone Draft 2020-12 schema + locked root (Invariant 11), the
+        # line_spacing.fixed_pt conditional (required iff mode==fixed_pt, AND mode
+        # itself required), NO venue_profile provenance machinery leaked in
+        # (declared-only downgraded to docs, design §3), cut fields stay cut
+        # (design §4), the synthetic example validates, the formatter + intake
+        # prose wiring carry their load-bearing literals (byte-equivalence guard,
+        # fail-closed, venue precedence; write-nothing-when-declined + structural
+        # PCR row), and the POSITIONING ship-contract-not-content boundary (§6).
         # The pytest companion `test_check_439_format_profile.py` runs via the
         # unified manifest.
         env:

@@ -22,6 +22,8 @@ the load-bearing properties so they cannot be silently broken:
      best-effort) — Slice C wiring, guarded by literal-presence like #394.
   7. The intake Step 5 follow-up carries the write-nothing-when-declined rule
      (Invariant 7 byte-equivalence) and the PCR row omission note.
+  8. POSITIONING.md records the ship-contract-not-content boundary (#439 §6) —
+     the mechanism ships, no specific school's/journal's profile content does.
 
 Mutation discipline: scripts/test_check_439_format_profile.py proves each check
 fires when its guarded property is broken.
@@ -45,6 +47,7 @@ SCHEMA = ROOT / "shared" / "contracts" / "submission" / "format_profile.schema.j
 EXAMPLE = ROOT / "shared" / "contracts" / "submission" / "format_profile.example.yaml"
 FORMATTER = ROOT / "academic-paper" / "agents" / "formatter_agent.md"
 INTAKE = ROOT / "academic-paper" / "agents" / "intake_agent.md"
+POSITIONING = ROOT / "POSITIONING.md"
 FMT_HEADING = "## Format Profile (#439) — declared layout, NOT-DECLARED → current default"
 
 # Fields that were deliberately cut (design §4) — must NOT reappear.
@@ -260,6 +263,22 @@ def check_intake_wiring(text: str) -> list[str]:
     return errors
 
 
+def check_positioning_boundary(text: str) -> list[str]:
+    """Invariant 8: POSITIONING.md records the #439 ship-contract-not-content boundary.
+
+    The boundary (ARS ships the format_profile mechanism, never a specific school's/
+    journal's profile content) is otherwise prose-only and unguarded — this pins that it
+    stays recorded with its review criterion (design §6 acceptance).
+    """
+    errors: list[str] = []
+    if "format-profile content" not in text.lower():
+        errors.append("POSITIONING.md missing the #439 institutional/journal format-profile boundary note")
+        return errors
+    if "Review criterion:" not in text or "out-of-tree" not in text:
+        errors.append("POSITIONING.md #439 boundary must keep its Review criterion + out-of-tree rule")
+    return errors
+
+
 def main() -> int:
     if not SCHEMA.exists():
         print(f"FAIL: schema not found at {SCHEMA}", file=sys.stderr)
@@ -273,13 +292,14 @@ def main() -> int:
     errors += check_example_fixture(schema)
     errors += check_formatter_wiring(FORMATTER.read_text(encoding="utf-8"))
     errors += check_intake_wiring(INTAKE.read_text(encoding="utf-8"))
+    errors += check_positioning_boundary(POSITIONING.read_text(encoding="utf-8"))
 
     if errors:
         print("#439 format_profile lint FAILED:", file=sys.stderr)
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         return 1
-    print("#439 format_profile lint passed (7 invariants).")
+    print("#439 format_profile lint passed (8 invariants).")
     return 0
 
 
