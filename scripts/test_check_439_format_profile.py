@@ -13,10 +13,14 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from check_439_format_profile import (
+    FORMATTER,
+    INTAKE,
     SCHEMA,
     check_cut_fields_stay_cut,
     check_example_fixture,
     check_fixed_pt_conditional,
+    check_formatter_wiring,
+    check_intake_wiring,
     check_no_provenance,
     check_schema_valid,
 )
@@ -100,6 +104,53 @@ def test_example_fixture_violation_fails(schema):
     # forbid table_border_style 'three_line' (the example declares it) → example invalid
     mutated["properties"]["table_border_style"]["enum"] = ["full_grid", "none"]
     assert check_example_fixture(mutated), "an example that violates the schema must fire"
+
+
+# --- invariant 6: formatter wiring ------------------------------------------
+
+@pytest.fixture(scope="module")
+def formatter_text():
+    return FORMATTER.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def intake_text():
+    return INTAKE.read_text(encoding="utf-8")
+
+
+def test_formatter_wiring_real_tree_passes(formatter_text):
+    assert check_formatter_wiring(formatter_text) == []
+
+
+def test_formatter_wiring_missing_section_fails():
+    assert check_formatter_wiring("# no format profile section here"), \
+        "a formatter without the Format Profile section must fire"
+
+
+def test_formatter_wiring_dropped_guard_fails(formatter_text):
+    """Remove the byte-equivalence guard literal → check must fire."""
+    mutated = formatter_text.replace("skip this entire section", "skip it")
+    assert check_formatter_wiring(mutated), "dropping the byte-equivalence guard must fire"
+
+
+def test_formatter_wiring_dropped_venue_precedence_fails(formatter_text):
+    mutated = formatter_text.replace("venue compliance wins", "format profile wins")
+    assert check_formatter_wiring(mutated), "dropping venue precedence must fire"
+
+
+# --- invariant 7: intake wiring ---------------------------------------------
+
+def test_intake_wiring_real_tree_passes(intake_text):
+    assert check_intake_wiring(intake_text) == []
+
+
+def test_intake_wiring_missing_followup_fails():
+    assert check_intake_wiring("# no followup"), "a missing #439 follow-up must fire"
+
+
+def test_intake_wiring_dropped_byte_equiv_rule_fails(intake_text):
+    mutated = intake_text.replace("no PCR `Format Profile` row at all", "an absent row")
+    assert check_intake_wiring(mutated), "dropping the write-nothing rule must fire"
 
 
 # --- schema behavior: the contract a real profile must satisfy --------------

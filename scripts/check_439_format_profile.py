@@ -17,6 +17,11 @@ the load-bearing properties so they cannot be silently broken:
      no-unrequested-abstraction discipline, enforced.
   5. The committed synthetic example fixture exists and validates against the
      schema (design §6/§8) — keeps the boundary-note artifact from drifting.
+  6. The formatter's Format Profile section carries its load-bearing prose rules
+     (byte-equivalence guard, fail-closed, no-inference, venue precedence,
+     best-effort) — Slice C wiring, guarded by literal-presence like #394.
+  7. The intake Step 5 follow-up carries the write-nothing-when-declined rule
+     (Invariant 7 byte-equivalence) and the PCR row omission note.
 
 Mutation discipline: scripts/test_check_439_format_profile.py proves each check
 fires when its guarded property is broken.
@@ -30,9 +35,15 @@ from pathlib import Path
 import yaml
 from jsonschema import Draft202012Validator
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _skill_lint import check_section_literals  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 SCHEMA = ROOT / "shared" / "contracts" / "submission" / "format_profile.schema.json"
 EXAMPLE = ROOT / "shared" / "contracts" / "submission" / "format_profile.example.yaml"
+FORMATTER = ROOT / "academic-paper" / "agents" / "formatter_agent.md"
+INTAKE = ROOT / "academic-paper" / "agents" / "intake_agent.md"
+FMT_HEADING = "## Format Profile (#439) — declared layout, NOT-DECLARED → current default"
 
 # Fields that were deliberately cut (design §4) — must NOT reappear.
 CUT_ROOT_FIELDS = ("profile_name", "heading_font")
@@ -164,6 +175,39 @@ def check_example_fixture(schema: dict) -> list[str]:
     ]
 
 
+def check_formatter_wiring(text: str) -> list[str]:
+    """Invariant 6: the formatter's Format Profile section carries its load-bearing rules.
+
+    Slice C wiring is prose (LLM-agent behavior), so it is guarded by literal-presence
+    the way the #394 formatter advisories are — a refactor that drops the byte-equivalence
+    guard, the fail-closed STOP, or the venue-precedence rule fails loudly.
+    """
+    return check_section_literals(6, text, FMT_HEADING, "formatter format-profile", {
+        "byte-equivalence guard (skip when no row)": "skip this entire section",
+        "fail-closed before formatting": "fail closed BEFORE formatting",
+        "no-inference rule": "Never infer a missing layout field",
+        "venue precedence": "venue compliance wins",
+        "best-effort per target": "best-effort per output target",
+    })
+
+
+def check_intake_wiring(text: str) -> list[str]:
+    """Invariant 7: the intake Step 5 follow-up carries the write-nothing-when-declined rule."""
+    errors: list[str] = []
+    if "Format-profile follow-up (#439" not in text:
+        errors.append("intake_agent.md missing the #439 Format-profile follow-up at Step 5")
+        return errors
+    # the byte-equivalence discipline (declined => no PCR row at all) is load-bearing
+    if "no PCR `Format Profile` row at all" not in text:
+        errors.append(
+            "intake follow-up must state a declined run writes NO PCR Format Profile row "
+            "(Invariant 7 byte-equivalence — an explicit `absent` would perturb)"
+        )
+    if "ROW OMITTED ENTIRELY" not in text:
+        errors.append("PCR Format Profile row must document that it is omitted when declined")
+    return errors
+
+
 def main() -> int:
     if not SCHEMA.exists():
         print(f"FAIL: schema not found at {SCHEMA}", file=sys.stderr)
@@ -175,13 +219,15 @@ def main() -> int:
     errors += check_no_provenance(schema)
     errors += check_cut_fields_stay_cut(schema)
     errors += check_example_fixture(schema)
+    errors += check_formatter_wiring(FORMATTER.read_text(encoding="utf-8"))
+    errors += check_intake_wiring(INTAKE.read_text(encoding="utf-8"))
 
     if errors:
         print("#439 format_profile lint FAILED:", file=sys.stderr)
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         return 1
-    print("#439 format_profile lint passed (5 invariants).")
+    print("#439 format_profile lint passed (7 invariants).")
     return 0
 
 
