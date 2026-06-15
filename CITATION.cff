@@ -29,7 +29,6 @@ keywords:
 license: CC-BY-NC-4.0
 version: 3.12.1
 date-released: 2026-06-15
-# After enabling Zenodo, add the concept DOI here so GitHub's
-# "Cite this repository" button and downstream tools resolve to a
-# permanent identifier, e.g.:
-# doi: 10.5281/zenodo.XXXXXXX
+# Zenodo concept DOI — represents all versions, always resolves to the latest.
+# (The v3.12.1 version DOI is 10.5281/zenodo.20696615.)
+doi: 10.5281/zenodo.20696614
