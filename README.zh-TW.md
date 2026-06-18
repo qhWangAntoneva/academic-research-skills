@@ -306,6 +306,10 @@ https://github.com/Imbad0202/academic-research-skills
 
 ## 更新紀錄
 
+### v3.13.0（2026-06-18）— Hook 可移植性、provider-agnostic 驗證、guard 正確性
+
+> 一個 minor release，強化安裝／執行面並擴展跨模型範圍。**修正：** 寫入範圍 guard 在 git-clone + symlink 安裝佈局下不再誤擋使用者自己的 `CLAUDE.md`（#459，收掉 #448/#449 的殘餘一半——`CLAUDE.md` 是文件而非承載 enforcement 的檔案，故移出 infra 保護清單，所有承載檔案仍受保護）；Windows Python hook 可移植性 + 無 Python 時優雅降級，改由跨平台 `hooks/run_guard.sh` launcher 啟動，會拒絕 0-byte 的 Microsoft Store `python3` stub 且不再洗 hook log（#454）；`draft_writer` dual-phase static union 文件化 + Windows POSIX-safe 路徑匹配（#451）。**新增：** provider-agnostic 跨模型驗證，接受 OpenAI 相容端點（MiMo、DeepSeek、自架）與 grounded first-party OpenAI 並存，且後者絕不被靜默降級（#455）；opt-in 的 Socratic 鄰近 framing probe（借自 STORM 的視角擴展，`ARS_SOCRATIC_ADJACENT_PROBE=1`，預設 OFF，純 prose-layer——`deep-research` 2.10.0 → 2.11.0）（#461）。`academic-pipeline` 隨 suite 至 v3.13.0；`academic-paper` 與 `academic-paper-reviewer` 不變。逐 issue 細節見 `CHANGELOG.md`。
+
 ### v3.12.1（2026-06-15）— 審稿回覆分流模式（PR #433 整合）
 
 > 一個 patch release，依 ARS 的模式化架構，把一份外部貢獻中真正具新意的部分收進既有 skill 成為模式。**新模式：** `deep-research` `three-way-scan` —— 介於 `quick` 與 `lit-review` 之間的輕量 WHY/HOW/WHAT 論文比較分流，產出逐論文短清單加跨論文統合（`deep-research` 2.9.4 → 2.10.0）；`academic-paper` `rebuttal-audit` —— 對作者既有的 rebuttal／回覆草稿，比對審稿意見做獨立的諮詢式 QA（逐條覆蓋表 + 缺口清單 + 語氣／證據／誤讀風險旗標），它不產生任何內容，且獨立呼叫時明確抑制 Schema 11／Material Passport 寫入／`ready_to_submit`（由帶 mutation 覆蓋的 `check_rebuttal_audit_guard()` lint 強制）；另含 `revision-coach` 範圍擴展到反駁／不同意姿態與非期刊情境，以及 `/ars-3w` + `/ars-rebuttal-audit` 斜線指令。依輸入形狀路由：審稿意見加草稿 → `rebuttal-audit`；僅意見 → `revision-coach`。整合自 [@Yaobin29](https://github.com/Yaobin29) 的 [PR #433](https://github.com/Imbad0202/academic-research-skills/pull/433)。Suite 模式數 25 → 27（仍 4 個 skill）。逐 issue 細節見 `CHANGELOG.md`。
