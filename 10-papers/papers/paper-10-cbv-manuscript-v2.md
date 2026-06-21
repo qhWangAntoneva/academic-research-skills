@@ -66,9 +66,11 @@ The problem of estimating the number of clusters has generated a substantial lit
 
 **Recent advances.** A Bayesian CVI [23] formulates cluster validation as posterior inference. The CNMBI index [24] uses center pairwise matching for high-dimensional data. The BWDM index [25] introduces a nonparametric validation approach for scalability. A KDE-based CVI [26] uses density estimation to assess clustering quality, though without the specific theoretical guarantees of critical bandwidth testing. Feature rescaling factors [27] address the noise-feature problem by learning dimension-specific weights during validation. Despite this diversity, all of the above — including these recent proposals — evaluate *partitions* produced by a clustering algorithm and do not directly test the statistical hypothesis that the density has a given number of modes. We note that the KDE-based CVI of [26] is the closest related work to CBV in terms of using density estimation, but it evaluates partition quality (via density-based scoring) rather than estimating $k$ from modality structure; a direct comparison would require re-implementing their method, which is beyond the scope of this work.
 
-**Stability-based approaches.** A third paradigm assesses $ through cluster stability under resampling. Ben-Hur et al. (2002) proposed evaluating $ by the similarity of clusterings across bootstrap samples, selecting $ where stability is highest. Tibshirani and Walther (2005) extended this with a meta-clustering approach. These methods are complementary to both geometric CVIs and CBV: they assess the *robustness* of a clustering rather than its quality or the density structure. CBV could be combined with stability methods in an ensemble framework.
+Beyond these partition-quality and distributional approaches, two additional paradigms have emerged for estimating $k$.
 
-**Representation-learning approaches.** Deep learning methods have been applied to cluster counting through autoencoder-based model selection. Xie et al. (2016) proposed Deep Embedded Clustering (DEC), which learns representations and estimates $ jointly. VaDE (Jiang et al., 2017) combines variational autoencoders with Gaussian mixtures for joint representation learning and cluster estimation. These methods are computationally expensive and require task-specific architecture design, limiting their applicability as general-purpose CVIs. They represent a distinct paradigm from the geometric, statistical, and stability-based approaches discussed above.
+**Stability-based approaches.** A third paradigm assesses $k$ through cluster stability under resampling. Ben-Hur et al. (2002) proposed evaluating $k$ by the similarity of clusterings across bootstrap samples, selecting $k$ where stability is highest. Tibshirani and Walther (2005) extended this with a meta-clustering approach. These methods are complementary to both geometric CVIs and CBV: they assess the *robustness* of a clustering rather than its quality or the density structure. CBV could be combined with stability methods in an ensemble framework.
+
+**Representation-learning approaches.** Deep learning methods have been applied to cluster counting through autoencoder-based model selection. Xie et al. (2016) proposed Deep Embedded Clustering (DEC), which learns representations and estimates $k$ jointly. VaDE (Jiang et al., 2017) combines variational autoencoders with Gaussian mixtures for joint representation learning and cluster estimation. These methods are computationally expensive and require task-specific architecture design, limiting their applicability as general-purpose CVIs. They represent a distinct paradigm from the geometric, statistical, and stability-based approaches discussed above.
 
 ### 2.2 Modality Testing and Mode Counting
 
@@ -80,9 +82,9 @@ The recent `critband` package [20], [21] provides a Python implementation of cri
 
 ### 2.3 The Gap: Where Geometric Meets Statistical
 
-The literature reveals a curious and consequential separation (illustrated in Figure 1 of the supplementary materials). The CVI literature operates almost entirely within the geometric paradigm, optimizing partition quality without reference to the statistical significance of the discovered clusters. The modality testing literature provides rigorous statistical inference about distributional structure but stops short of providing a practical cluster validation index that can be directly compared with established CVIs. Even the Hartigan and KL indices, which incorporate distributional ratios, do not perform formal multimodality testing.
+As detailed in §1.3, the CVI and modality testing literatures have developed in isolation. Here we characterize this gap more precisely. The fundamental disconnect is one of *objectives*: geometric CVIs optimize a partition-quality score (Silhouette, CH, DB, Gap), while modality testing performs inference about density structure (Silverman, Dip Test, excess mass). These objectives are related — the number of density modes provides evidence for the number of clusters — but the existing literature has not operationalized this connection into a practical index.
 
-Our work bridges this gap. We operationalize critical bandwidth testing — developed over four decades in the statistics literature — as a practical CVI that produces a single $\hat{k}$ estimate directly from the data distribution. This estimate can be evaluated on the same terms as any geometric CVI, while providing fundamentally different information: not the quality of a partition, but the statistical evidence for a given number of modes in the underlying density.
+Our work bridges this gap. We operationalize critical bandwidth testing — developed over four decades in the statistics literature — as a practical CVI that produces a single $\hat{k}$ estimate directly from the data distribution. This estimate can be evaluated on the same terms as any geometric CVI, while providing fundamentally different information: not the quality of a partition, but the statistical evidence for a given number of modes in the underlying density. The next section formalizes this bridge through the CBV algorithm.
 
 ---
 
@@ -170,7 +172,7 @@ where $\tau = 15$ is a scaling parameter and $d$ is the number of features. This
 
 **Selection of $\tau = 15$.** The parameter $\tau$ controls the rate at which tolerance increases with dimensionality: smaller $\tau$ causes faster saturation (risking false mode detection), while larger $\tau$ causes slower increase (risking missed modes). Table II shows the adaptive tolerance $t(d)$ for representative dimensionalities across $\tau$ values.
 
-**TABLE II. Adaptive Tolerance $t(d)$ for Different $\tau$ Values**
+**TABLE I. Adaptive Tolerance $t(d)$ for Different $\tau$ Values**
 
 | $\tau$ | $t(d{=}2)$ | $t(d{=}10)$ | $t(d{=}15)$ | $t(d{=}50)$ | Range |
 |:------:|:----------:|:-----------:|:-----------:|:-----------:|:-----:|
@@ -209,9 +211,10 @@ The weighted mean produces fractional estimates that must be rounded to the near
 
 We establish conditions under which per-dimension mode counting recovers the true cluster count $k^*$, providing the theoretical foundation for CBV's aggregation procedure.
 
-**Proposition 1 (Mode Recovery under Isotropic Gaussian Mixtures).** Consider a $k^*$-component isotropic Gaussian mixture $\mathcal{G} = \sum_{c=1}^{k^*} \pi_c \mathcal{N}(\mu_c, \sigma^2 I_d)$ with equal mixing proportions $\pi_c = 1/k^*$ and component means $\mu_c \in \mathbb{R}^d$. Let $\Delta_{\min} = \min_{c \neq c'} \|\mu_c - \mu_{c'}\|$ denote the minimum inter-component distance, and let $h_S = 1.06 \hat{\sigma} n^{-1/5}$ be Silverman's reference bandwidth for a single dimension. If $\Delta_{\min} > 2 h_S$, then for each dimension $j$ where the projected means $\{\mu_c^{(j)}\}_{c=1}^{k^*}$ are distinct, the 1D kernel density estimate $\hat{f}_j$ has exactly $k^*$ modes, and consequently $v_j = k^*$.
+**Proposition 1 (Mode Recovery under Isotropic Gaussian Mixtures).** Consider a $k^*$-component isotropic Gaussian mixture $\mathcal{G} = \sum_{c=1}^{k^*} \pi_c \mathcal{N}(\mu_c, \sigma^2 I_d)$ with equal mixing proportions $\pi_c = 1/k^*$ and component means $\mu_c \in \mathbb{R}^d$. For each dimension $j$ where the projected means $\{\mu_c^{(j)}\}_{c=1}^{k^*}$ are distinct, let $\Delta_j = \min_{c 
+eq c'} |\mu_c^{(j)} - \mu_{c'}^{(j)}|$. If $\Delta_j > 2 h_{\mathrm{Silver}}$ for all such dimensions, then the 1D KDE $\hat{f}_j$ has exactly $k^*$ modes in each such dimension, and consequently $v_j = k^*$.
 
-*Proof sketch.* Under the stated conditions, the 1D marginal in dimension $j$ is a mixture of $k^*$ well-separated 1D Gaussians. Silverman's bandwidth $h_S$ is calibrated for unimodal density estimation; when applied to a multimodal density with component separation $\Delta_j > 2h_S$, the bandwidth is too large to smooth away the individual modes. The critical bandwidth $h_{\mathrm{crit}}(k^*)$ — the bandwidth at which $\hat{f}_j$ becomes unimodal — therefore satisfies $h_{\mathrm{crit}}(k^*) < h_S$, triggering CBV's threshold condition. For any $k > k^*$, the corresponding critical bandwidth exceeds $h_S$ (the density genuinely has $k^*$ modes, not more), so the sequential test terminates at $k^*$. $\square$
+*Proof sketch.* Under the stated conditions, the 1D marginal in dimension $j$ is a mixture of $k^*$ well-separated 1D Gaussians. Silverman's bandwidth $h_{\mathrm{Silver}}$ is calibrated for unimodal density estimation; when applied to a multimodal density with component separation $\Delta_j > 2h_S$, the bandwidth is too large to smooth away the individual modes. The critical bandwidth $h_{\mathrm{crit}}(k^*)$ — the bandwidth at which $\hat{f}_j$ becomes unimodal — therefore satisfies $h_{\mathrm{crit}}(k^*) < h_S$, triggering CBV's threshold condition. For any $k > k^*$, the corresponding critical bandwidth exceeds $h_S$ (the density genuinely has $k^*$ modes, not more), so the sequential test terminates at $k^*$. $\square$
 
 **Corollary 1 (Majority Vote Consistency).** Under the conditions of Proposition 1, if at least $\lceil d/2 \rceil$ dimensions have distinct projected means, then the majority vote aggregation yields $\hat{k} = k^*$.
 
@@ -377,7 +380,7 @@ We assess significance using:
 
 Table I reports the overall exact-match accuracy across 58 datasets, averaged over 5 random seeds.
 
-**TABLE I. Benchmark Accuracy (Mean $\pm$ Std Across 5 Seeds)**
+**TABLE II. Benchmark Accuracy (Mean $\pm$ Std Across 5 Seeds)**
 
 | Rank | Index | Accuracy | MAE | $\pm 1$ Acc | ARI |
 |:----:|-------|:--------:|:---:|:------:|:---:|
@@ -442,7 +445,7 @@ Category C (correlated dimensions) was identified through the Phase D ablation s
 
 A key finding is that CBV and geometric CVIs succeed on structurally different data regimes. To quantify this complementarity, we compute three metrics on the 58-dataset benchmark (seed = 42): (i) Jaccard similarity of the sets of datasets where each index is correct, (ii) OR-ensemble accuracy (accepting either index's estimate as correct), and (iii) a Complementarity Index (CI) measuring the fraction of the oracle–best gap that the ensemble closes.
 
-**TABLE VII. Complementarity Analysis (58 Datasets, Seed = 42)**
+**TABLE V. Complementarity Analysis (58 Datasets, Seed = 42)**
 
 | Pair | Jaccard | Single Acc. | OR-Ensemble Acc. | CI |
 |------|:-------:|:-----------:|:-----------------:|:--:|
@@ -451,7 +454,7 @@ A key finding is that CBV and geometric CVIs succeed on structurally different d
 | CBV + Silhouette | 0.625 | CBV 51.7%, Sil 38.3% | **63.8%** | 0.593 |
 | CBV + all 9 geometric | 0.412 | Best-geo 70.7% | **74.1%** | 1.000 |
 
-The mean Jaccard coefficient across all 9 geometric CVIs is 0.412, indicating substantial independence between CBV's correct set and those of geometric indices. The CBV + Gap Statistic OR-ensemble achieves 67.2% accuracy — a 13.8pp improvement over the best single index (Gap, 53.4%) — with a Complementarity Index of 0.667, meaning the ensemble closes two-thirds of the gap between the best single index and the oracle (74.1%). Notably, when CBV is combined with all 9 geometric indices, the ensemble achieves exactly the oracle accuracy (74.1%, 43/58 datasets), yielding CI = 1.000. This demonstrates that CBV captures information that no geometric index provides: without CBV, 1 dataset (moons\_noise0.05) cannot be correctly estimated by any geometric CVI.
+The mean Jaccard coefficient across all 9 geometric CVIs is 0.412, indicating substantial independence between CBV's correct set and those of geometric indices. The CBV + Gap Statistic OR-ensemble achieves 67.2% accuracy — a 13.8pp improvement over the best single index (Gap, 53.4% at seed 42; 53.8% cross-seed average) — with a Complementarity Index of 0.667, meaning the ensemble closes two-thirds of the gap between the best single index and the oracle (74.1%). Notably, when CBV is combined with all 9 geometric indices, the ensemble achieves exactly the oracle accuracy (74.1%, 43/58 datasets), yielding CI = 1.000. This demonstrates that CBV captures information that no geometric index provides: without CBV, 2 datasets (moons\_noise0.05, moons\_noise0.1) cannot be correctly estimated by any geometric CVI.
 
 Cross-seed validation confirms this complementarity is stable: the CBV + Gap ensemble CI ranges from 0.615 to 0.727 across 5 seeds (mean 0.674), indicating robust complementary behavior.
 
@@ -463,7 +466,7 @@ The disagreement signal between CBV and geometric indices is itself informative:
 
 Table V compares the random 2D projection variant against CBVHybrid on the full 58-dataset benchmark (single seed = 42).
 
-**TABLE V. CBVVariant Comparison**
+**TABLE VI. CBVVariant Comparison**
 
 | Variant | Accuracy | MAE | ARI |
 |---------|:--------:|:---:|:---:|
@@ -477,7 +480,7 @@ CBVHybrid outperforms CBVProjection by 5.1pp in accuracy. Head-to-head analysis 
 
 We systematically evaluated CBV's robustness to correlated redundant dimensions by generating datasets with 0, 4, 10, or 20 extra dimensions that are linear combinations of the cluster-informative features, at correlation strengths $s \in \{0.0, 0.5, 0.9\}$.
 
-**TABLE VI. Accuracy by Correlation Strength (Mean Over n_corr_dims)**
+**TABLE VII. Accuracy by Correlation Strength (Mean Over n_corr_dims)**
 
 | Index | $s = 0.0$ (noise) | $s = 0.5$ (moderate) | $s = 0.9$ (strong) |
 |-------|:------------------:|:---------------------:|:-------------------:|
@@ -584,9 +587,9 @@ This research was conducted using the critband package [20], [21] for critical b
 
 ## Data Availability
 
-All data used in this study is publicly available. Synthetic datasets were generated using scikit-learn. Real-world datasets are available from the UCI Machine Learning Repository, OpenML, and scikit-learn's built-in datasets. The complete benchmark results and implementation code are available at https://github.com/[author]/cbv-benchmark (to be made public upon acceptance).
+All data used in this study is publicly available. Synthetic datasets were generated using scikit-learn. Real-world datasets are available from the UCI Machine Learning Repository, OpenML, and scikit-learn's built-in datasets. The complete benchmark results and implementation code are available at https://github.com/cbv-benchmark (to be made public upon acceptance).
 
-**Supplementary Materials.** The following supplementary materials are provided: (S1) per-dataset results table (58 datasets × 10 indices × 5 seeds, including $\hat{k}$ and correctness for each); (S2) pairwise complementarity matrix (CSV); (S3) figures (complementarity scatter, Jaccard bar chart, correctness heatmap, accuracy comparison, rank comparison). These are available at https://github.com/[author]/cbv-benchmark/tree/main/supplementary.
+**Supplementary Materials.** The following supplementary materials are provided: (S1) per-dataset results table (58 datasets × 10 indices × 5 seeds, including $\hat{k}$ and correctness for each); (S2) pairwise complementarity matrix (CSV); (S3) figures (complementarity scatter, Jaccard bar chart, correctness heatmap, accuracy comparison, rank comparison). These are available at https://github.com/cbv-benchmark/tree/main/supplementary.
 
 ---
 
