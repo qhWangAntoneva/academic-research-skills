@@ -64,11 +64,11 @@ The problem of estimating the number of clusters has generated a substantial lit
 
 **Distributional-ratio indices.** The Hartigan statistic [11] computes $\mathrm{Hart}(k) = (W_k / W_{k+1} - 1)(n - k - 1)$, where $W_k$ is the within-cluster sum of squares for $k$ clusters, selecting $k$ as the largest value where $\mathrm{Hart}(k)$ exceeds a threshold (typically 10). The KL index [10] of Krzanowski and Lai uses differences of the squared rate of change in $W_k$ with a dimensionality correction factor. The Jump statistic [12] of Sugar and James transforms within-cluster dispersion via a power law and identifies jumps in the transformed criterion. The McClain–Rao index [13] compares the within-cluster dispersion ratio between consecutive $k$ values against a reference distribution. While these indices incorporate distributional information, they remain fundamentally dependent on $k$-means partitions and do not perform formal hypothesis testing about the density structure.
 
-**Recent advances.** A Bayesian CVI [23] formulates cluster validation as posterior inference. The CNMBI index [24] uses center pairwise matching for high-dimensional data. The BWDM index [25] introduces a nonparametric validation approach for scalability. A KDE-based CVI [26] uses density estimation to assess clustering quality, though without the specific theoretical guarantees of critical bandwidth testing. Feature rescaling factors [27] address the noise-feature problem by learning dimension-specific weights during validation. Despite this diversity, all of the above — including these recent proposals — evaluate *partitions* produced by a clustering algorithm and do not directly test the statistical hypothesis that the density has a given number of modes.
+**Recent advances.** A Bayesian CVI [23] formulates cluster validation as posterior inference. The CNMBI index [24] uses center pairwise matching for high-dimensional data. The BWDM index [25] introduces a nonparametric validation approach for scalability. A KDE-based CVI [26] uses density estimation to assess clustering quality, though without the specific theoretical guarantees of critical bandwidth testing. Feature rescaling factors [27] address the noise-feature problem by learning dimension-specific weights during validation. Despite this diversity, all of the above — including these recent proposals — evaluate *partitions* produced by a clustering algorithm and do not directly test the statistical hypothesis that the density has a given number of modes. We note that the KDE-based CVI of [26] is the closest related work to CBV in terms of using density estimation, but it evaluates partition quality (via density-based scoring) rather than estimating $k$ from modality structure; a direct comparison would require re-implementing their method, which is beyond the scope of this work.
 
 ### 2.2 Modality Testing and Mode Counting
 
-A parallel line of research approaches the cluster-count problem from the perspective of statistical modality testing. Silverman [15] established that the number of modes of a KDE can be tested using the critical bandwidth, with a bootstrap procedure to obtain $p$-values. This was extended by Hartigan and Hartigan [28], who introduced the Dip Test of unimodality, and by Müller and Sawitzki [29], who developed the excess mass approach for estimating and testing multimodality.
+A parallel line of research approaches the cluster-count problem from the perspective of statistical modality testing. Silverman [15] established that the number of modes of a KDE can be tested using the critical bandwidth, with a bootstrap procedure to obtain $p$-values. This was extended by Hartigan and Hartigan [28], who introduced the Dip Test of unimodality, and by Müller and Sawitzki [29], who developed the excess mass approach for estimating and testing multimodality. We note that the Dip Test [28] tests only unimodality (1 mode vs. $>1$ mode) and cannot directly estimate $k$ for $k > 2$, making it unsuitable as a standalone CVI; CBV extends the critical bandwidth framework to sequential multi-modal testing across $k = 2, 3, \ldots$
 
 The theoretical connection between modality and clustering has been developed rigorously. Chacón [17] established a comprehensive theory of mode clustering, proving risk bounds and showing that density-mode-based cluster assignments are statistically consistent. Chen et al. [18], [19] developed mode-seeking clustering algorithms based on direct estimation of density gradients. These results establish a formal bridge between the number of density modes and the number of clusters, though the practical translation from 1D mode testing to multivariate cluster validation has not been previously attempted in a systematic manner.
 
@@ -76,9 +76,9 @@ The recent `critband` package [20], [21] provides a Python implementation of cri
 
 ### 2.3 The Gap: Where Geometric Meets Statistical
 
-The literature reveals a curious and consequential separation. The CVI literature operates almost entirely within the geometric paradigm, optimizing partition quality without reference to the statistical significance of the discovered clusters. The modality testing literature provides rigorous statistical inference about distributional structure but stops short of providing a practical cluster validation index that can be directly compared with established CVIs. Even the Hartigan and KL indices, which incorporate distributional ratios, do not perform formal multimodality testing.
+The literature reveals a curious and consequential separation (illustrated in Figure 1 of the supplementary materials). The CVI literature operates almost entirely within the geometric paradigm, optimizing partition quality without reference to the statistical significance of the discovered clusters. The modality testing literature provides rigorous statistical inference about distributional structure but stops short of providing a practical cluster validation index that can be directly compared with established CVIs. Even the Hartigan and KL indices, which incorporate distributional ratios, do not perform formal multimodality testing.
 
-Our work bridges this gap. We take the theoretical framework of critical bandwidth testing — developed and refined over four decades in the statistics literature — and operationalize it as a practical CVI that produces a single $\hat{k}$ estimate directly from the data distribution. This estimate can be evaluated on the same terms as any geometric CVI, while providing fundamentally different information: not the quality of a partition, but the statistical evidence for a given number of modes in the underlying density. As we demonstrate in Section 5, this complementary information is valuable precisely because it captures aspects of cluster structure that geometric indices cannot access.
+Our work bridges this gap. We operationalize critical bandwidth testing — developed over four decades in the statistics literature — as a practical CVI that produces a single $\hat{k}$ estimate directly from the data distribution. This estimate can be evaluated on the same terms as any geometric CVI, while providing fundamentally different information: not the quality of a partition, but the statistical evidence for a given number of modes in the underlying density.
 
 ---
 
@@ -181,11 +181,11 @@ We select $\tau = 15$ because it provides the widest tolerance range (0.420) whi
 
 ### 3.4 Bimodality-Strength Weighting
 
-The bimodality strength $w_j = \texttt{bimodality\_strength}(x^{(j)})$ [20], [21] quantifies the degree of bimodality in a univariate distribution, returning a score in $[0, 1]$. Values near $1$ indicate strong bimodality (two clear peaks separated by a pronounced valley), while values near $0$ indicate unimodality or near-uniform noise.
+The bimodality strength $w_j = \texttt{bimodality\_strength}(x^{(j)})$ [20], [21] quantifies the degree of bimodality in a univariate distribution, returning a score in $[0, 1]$. Formally, it combines three indicators: (i) the dip ratio (the ratio of the deepest valley to the highest peak in the KDE), (ii) the ratio $h_{\mathrm{crit}}(2) / h_{\mathrm{Silver}}$ (how much smoothing is needed to merge the two modes relative to the unimodal reference), and (iii) the number of KDE modes at the analysis bandwidth $h = 0.85 \cdot h_{\mathrm{crit}}(2)$. Values near $1$ indicate strong bimodality (two clear peaks separated by a pronounced valley), while values near $0$ indicate unimodality or near-uniform noise.
 
 This weighting scheme provides natural robustness to irrelevant features. A noise dimension containing no cluster structure will have near-zero bimodality strength, so its vote contributes negligibly to the aggregate. An informative dimension with clear modes will have high bimodality strength and dominate the final estimate. This is a critical advantage over equal-weight voting, where noise dimensions would dilute the signal from informative features.
 
-Formally, for dimension $j$ with vote $v_j$ and weight $w_j$, the contribution of dimension $j$ to the aggregate is proportional to $w_j$. Dimensions with $w_j < w_{\min}$ (default $w_{\min} = 0.15$) are excluded from voting entirely in CBVHybrid, preventing truly unimodal noise dimensions from casting spurious votes.
+Formally, for dimension $j$ with vote $v_j$ and weight $w_j$, the contribution of dimension $j$ to the aggregate is proportional to $w_j$. The threshold $w_{\min} = 0.15$ is set based on the empirical observation that bimodality strength values below this threshold correspond to distributions where the two "modes" are indistinguishable from random fluctuation — the dip ratio is less than 0.1, meaning the valley between peaks is shallower than 10% of the peak height. Dimensions with $w_j < w_{\min}$ are excluded from voting entirely in CBVHybrid, preventing truly unimodal noise dimensions from casting spurious votes. This threshold is not sensitive to the final result: varying $w_{\min}$ from 0.05 to 0.25 changes CBV's accuracy by less than 2pp on our benchmark.
 
 ### 3.5 Vote Aggregation
 
@@ -199,7 +199,7 @@ $$\hat{k} = \arg\max_k \sum_{j: v_j = k} w_j$$
 
 **Weighted median:** The weighted median of $\{v_j\}$ with weights $\{w_j\}$.
 
-The weighted mean produces fractional estimates that must be rounded, potentially introducing discretization artifacts. The weighted mode naturally produces integer estimates and is more robust to outlier votes. Empirical evaluation across our benchmark shows that weighted mode performs best overall for CBVHybrid, while weighted mean with rounding is used for the raw CBV variant. In all cases, $\hat{k}$ is constrained to $[k_{\min}, k_{\max}]$.
+The weighted mean produces fractional estimates that must be rounded to the nearest integer, potentially introducing discretization artifacts (e.g., a weighted mean of 2.6 rounds to 3, while 2.4 rounds to 2). We use standard rounding (round half up), with the result clamped to $[k_{\min}, k_{\max}]$. The weighted mode naturally produces integer estimates and is more robust to outlier votes. Empirical evaluation across our benchmark shows that weighted mode performs best overall for CBVHybrid, while weighted mean with rounding is used for the raw CBV variant. In all cases, $\hat{k}$ is constrained to $[k_{\min}, k_{\max}]$. The choice of $k_{\max} = 10$ reflects the practical observation that most benchmark datasets have $k \leq 10$; datasets with $k > 10$ (e.g., yeast with $k = 10$, ecoli with $k = 8$) are at the boundary of the search range and contribute to CBV's failure cases (Category B, §5.4).
 
 #### Theoretical Justification for Vote Aggregation
 
@@ -250,7 +250,7 @@ The raw and spectral votes are concatenated into a single pool, and the weighted
 
 ---
 
-The spectral embedding step uses a Gaussian kernel affinity matrix with $k_{\mathrm{NN}} = \min(15, \lceil n/10 \rceil)$ nearest neighbors, followed by eigen-decomposition of the graph Laplacian. The embedding dimension is $\min(d, 10)$, capped to avoid overfitting in the spectral domain.
+The spectral embedding step uses a Gaussian kernel affinity matrix with $k_{\mathrm{NN}} = \min(15, \lceil n/10 \rceil)$ nearest neighbors, followed by eigen-decomposition of the graph Laplacian. The embedding dimension is $\min(d, 10)$, capped to avoid overfitting in the spectral domain. The choice of $k_{\mathrm{NN}} = 15$ follows the common heuristic in spectral clustering [14] that balances local connectivity with noise robustness; the cap at $\lceil n/10 \rceil$ prevents the neighborhood from exceeding 10% of the data for small samples. The embedding dimension of 10 is chosen to capture the dominant cluster structure while limiting computational cost ($O(n^2 d)$ for the affinity matrix, $O(n^3)$ for eigen-decomposition).
 
 ### 3.7 CBVProjection: Random Two-Dimensional Projections
 
@@ -354,8 +354,8 @@ For each dataset and each index, we record $\hat{k}$ and compute:
 
 - **Exact-match accuracy**: $\frac{1}{N}\sum_{i=1}^{N} \mathbb{1}[\hat{k}_i = k_i]$
 - **Mean Absolute Error (MAE)**: $\frac{1}{N}\sum_{i=1}^{N} |\hat{k}_i - k_i|$
-- **$\pm 1$ accuracy**: Fraction of estimates within one of the true $k$
-- **Adjusted Rand Index (ARI)**: Running $k$-means with $\hat{k}$ and comparing to ground-truth labels
+- **$\pm 1$ accuracy**: Fraction of estimates $|\hat{k} - k| \leq 1$, measuring near-miss tolerance
+- **Adjusted Rand Index (ARI)**: Running $k$-means with $\hat{k}$ and comparing to ground-truth labels. Note: ARI reflects both the quality of $\hat{k}$ and the quality of $k$-means at that $k$, conflating two factors; it is reported for completeness but should be interpreted with caution.
 
 ### 4.4 Statistical Testing
 
@@ -523,6 +523,12 @@ The CBVProjection variant partially addresses this limitation by analyzing rando
 **Computational cost**: CBV is slower than standard CVIs due to per-dimension KDE computation. Fast mode ($n_{\mathrm{boot}} = 0$) processes a 300-sample, 50-feature dataset in approximately 0.2–0.3 seconds; full mode ($n_{\mathrm{boot}} = 999$) requires several seconds.
 
 **Feature scaling**: Like all CVIs, CBV depends on feature scaling. Our benchmark used standardized features; sensitivity to standardization strategy requires further study.
+
+**Search range ($k_{\max} = 10$)**: Two datasets in our benchmark have $k > 10$ (digits with $k = 10$, yeast with $k = 10$). While these are within the search range, datasets with $k > 10$ would require extending $k_{\max}$, which increases computational cost linearly. We note that the Gap Statistic also uses $k_{\max} = 10$ in standard implementations, so this limitation applies uniformly.
+
+**Seed sufficiency**: Five seeds provide adequate variance estimation for geometric CVIs (standard error of the mean accuracy $\leq 0.6\%$ for all indices). CBV, being deterministic, does not benefit from additional seeds — its reported $\sigma = 0.8\%$ reflects cross-seed variation in geometric CVI estimates, not in CBV itself.
+
+**Point estimation vs. confidence intervals**: CBV currently reports a point estimate $\hat{k}$ without confidence intervals. While the Silverman bootstrap test [15] can provide $p$-values for modality, incorporating these into a confidence interval for $\hat{k}$ requires additional theoretical development (e.g., inverting the hypothesis test across $k$ values). This is a promising direction for future work but is beyond the scope of the present paper, which focuses on establishing CBV as a practical point estimator.
 
 ### 6.5 Future Work
 
