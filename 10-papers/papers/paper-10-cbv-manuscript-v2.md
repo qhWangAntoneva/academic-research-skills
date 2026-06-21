@@ -1,4 +1,4 @@
-# Critical Bandwidth as a Cluster Validation Index: A Statistical Modality Approach to Estimating the Number of Clusters
+# Critical Bandwidth Modality Testing for Estimating the Number of Clusters
 
 > **Target Journal**: IEEE Transactions on Neural Networks and Learning Systems (TNNLS)
 > **Manuscript Part 1**: Abstract through §3 Methodology
@@ -8,7 +8,7 @@
 
 ## Abstract
 
-Estimating the number of clusters $k$ in unlabeled data is a fundamental open problem in unsupervised learning. Existing internal cluster validation indices (CVIs) — Silhouette, Calinski–Harabasz, Davies–Bouldin, and the Gap Statistic — universally adopt a geometric paradigm: they evaluate candidate $k$-means partitions and select the one maximizing a compactness-and-separation criterion. We argue that this paradigm conflates partition quality with the distinct question of how many natural groups the data-generating process supports, a question requiring statistical inference rather than geometric optimization. We introduce **Critical Bandwidth Validation (CBV)**, the first CVI using critical bandwidth modality testing. CBV performs per-dimension sequential hypothesis testing: for each feature, it determines the smallest bandwidth at which the kernel density estimate becomes unimodal, then aggregates per-dimension mode votes weighted by bimodality strength. No $k$-means clustering is required. We introduce two variants: **CBVHybrid**, which fuses raw-feature and spectral-embedding analyses via per-dimension voting, and **CBVProjection**, which augments analysis with random two-dimensional projections. On a benchmark of 58 datasets (44 synthetic, 14 real) evaluated against 10 established CVIs across 5 random seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy (MAE $= 2.18$, $\pm 1$ accuracy $= 69.0\%$), ranking second behind the Gap Statistic ($53.8\%$) and above all geometric indices. Critically, CBV and geometric CVIs succeed on structurally different data regimes: their disagreements are informative, not random. These results establish CBV as the first theoretically grounded statistical-modality alternative to geometric cluster validation, providing complementary diagnostic information that geometric indices cannot access.
+Estimating the number of clusters $k$ in unlabeled data is a fundamental open problem in unsupervised learning. Existing internal cluster validation indices (CVIs) — Silhouette, Calinski–Harabasz, Davies–Bouldin, and the Gap Statistic — universally adopt a geometric paradigm: they evaluate candidate $k$-means partitions and select the one maximizing a compactness-and-separation criterion. We argue that this paradigm conflates partition quality with the distinct question of how many natural groups the data-generating process supports, a question requiring statistical inference rather than geometric optimization. To address this gap, we introduce **Critical Bandwidth Validation (CBV)**, a CVI grounded in critical bandwidth modality testing. CBV estimates $k$ directly from the data density via per-dimension sequential hypothesis testing — no $k$-means clustering is required — and aggregates per-dimension mode votes weighted by bimodality strength. We further introduce CBVHybrid (spectral-embedding fusion) and CBVProjection (random two-dimensional projections). On a benchmark of 58 datasets (44 synthetic, 14 real) evaluated against 10 established CVIs across 5 random seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy (MAE $= 2.18$, $\pm 1$ accuracy $= 69.0\%$), ranking second behind the Gap Statistic ($53.8\%$) and above all geometric indices. Critically, CBV and geometric CVIs succeed on structurally different data regimes: an OR-ensemble of CBV and the Gap Statistic achieves $67.2\%$ accuracy (+13.8pp over the best single index), with a Complementarity Index of 0.667. These results establish CBV as a statistically grounded complement to geometric cluster validation, providing diagnostic information that geometric indices cannot access.
 
 **Keywords**: Cluster validation, critical bandwidth, modality testing, Silverman, kernel density estimation, unsupervised learning, number of clusters.
 
@@ -533,6 +533,20 @@ The CBVProjection variant partially addresses this limitation by analyzing rando
 **Theoretical analysis**: A formal characterization of the relationship between Silverman's mode count and the true cluster count under different data-generating processes would strengthen CBV's theoretical foundations.
 
 **Adaptive bandwidth selection**: Developing a bandwidth selection strategy specifically optimized for CBV's mode-detection task (rather than density estimation) could improve accuracy across diverse data regimes.
+
+### 6.6 Practical Recommendations
+
+Based on our comprehensive evaluation, we offer the following guidance for practitioners:
+
+**When to use CBV.** CBV is most effective when: (i) features are approximately independent (low inter-feature correlation); (ii) clusters have moderate complexity (not highly non-convex); and (iii) the goal is to identify the number of natural groups rather than evaluate partition quality. CBV is particularly valuable when geometric CVIs disagree — the disagreement signal indicates complex structure that warrants investigation.
+
+**When to use geometric CVIs.** Geometric CVIs (especially Gap Statistic) outperform CBV when: (i) clusters are tight and well-separated; (ii) $k$ is high ($k \geq 5$); or (iii) features are strongly correlated. For production pipelines, we recommend running both CBV and the Gap Statistic and examining their agreement.
+
+**When to use ensemble methods.** The OR-ensemble of CBV and Gap Statistic achieves 67.2% accuracy — a 13.8pp improvement over the best single index. For maximum accuracy, use the full ensemble (CBV + all geometric CVIs), which achieves 74.1% (oracle accuracy on our benchmark).
+
+**Default hyperparameters.** CBV requires minimal hyperparameter tuning: $k_{\min} = 2$, $k_{\max} = 10$ (adjust if domain knowledge suggests more clusters), $\tau = 15$ (dimensionality scaling), and $t = 1.3$ (tolerance). The Silverman bandwidth is recommended over Sheather–Jones for CBV's threshold test.
+
+**Red flags.** If CBV returns $k_{\min}$ for most dimensions, the data may be unimodal or the features may be too correlated. If CBV returns $k_{\max}$, the search range may be too narrow. If CBV and all geometric CVIs disagree, the data structure may be ambiguous — consider visualizing the data or consulting domain experts.
 
 ---
 
