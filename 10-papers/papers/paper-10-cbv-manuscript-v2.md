@@ -504,6 +504,8 @@ In CBV's threshold test ($h_{\mathrm{crit}} < t \cdot h_{\mathrm{ref}}$), a smal
 
 The resolution is that Silverman's "over-smoothing" — its tendency to produce larger bandwidths — is actually beneficial for mode detection. A larger reference bandwidth means the threshold test is more permissive, detecting modes that are statistically present but may not be dominant in the density. For CBV's specific application (detecting the *presence* of modes, not estimating the density itself), Silverman's rule is the appropriate choice.
 
+**Kernel function selection.** We additionally evaluated CBV with four kernel functions: Gaussian, Epanechnikov, triangular, and uniform. On 20 synthetic datasets, Gaussian achieved 60.0% accuracy, while Epanechnikov achieved 20.0%, triangular 15.0%, and uniform 0.0%. The Gaussian kernel's superiority stems from its smooth, infinitely differentiable density estimate, which produces well-defined critical bandwidths. Compact-support kernels (Epanechnikov, uniform) produce discontinuous density estimates with ambiguous mode-counting at the boundary, leading to unreliable $h_{\mathrm{crit}}$ values. We therefore use the Gaussian kernel throughout.
+
 ### 6.3 Correlated-Dimension Vulnerability
 
 The correlated-dimension ablation reveals a fundamental structural limitation of CBV: its per-dimension independence assumption. When features are correlated, redundant dimensions generate duplicate mode votes that can overwhelm the signal from truly informative dimensions. CBV drops to $k = 2$ when as few as 4 correlated dimensions are added, regardless of correlation strength.
