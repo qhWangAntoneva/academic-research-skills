@@ -20,7 +20,7 @@ Estimating the true number of clusters $k$ in an unlabeled dataset remains one o
 
 ### 1.1 The Geometric Paradigm in Cluster Validation
 
-The dominant approach to estimating $k$ employs internal cluster validation indices (CVIs) within a common pipeline: enumerate candidate values of $k$, compute a clustering (typically via $k$-means), evaluate each candidate using a geometric criterion, and select the $k$ that optimizes that criterion. The Silhouette index [5] measures how similar each point is to its own cluster relative to the nearest neighboring cluster. The Calinski–Harabasz (CH) index [6] computes the ratio of between-cluster to within-cluster dispersion. The Davies–Bouldin (DB) index [7] measures average similarity between each cluster and its most similar counterpart. The Gap Statistic [8] compares within-cluster dispersion against a null reference distribution. The Dunn index [9] computes the ratio of minimum inter-cluster to maximum intra-cluster distance. More recent indices — the KL index [10], the Hartigan statistic [11], the Jump statistic [12], and the McClain–Rao index [13] — continue to refine geometric and algebraic criteria for partition quality.
+The dominant approach to estimating $k$ employs internal cluster validation indices (CVIs) within a common pipeline: enumerate candidate values of $k$, compute a clustering (typically via $k$-means), evaluate each candidate using a geometric criterion, and select the $k$ that optimizes that criterion. The Silhouette index [5] measures how similar each point is to its own cluster relative to the nearest neighboring cluster. The Calinski–Harabasz (CH) index [6] computes the ratio of between-cluster to within-cluster dispersion. The Davies–Bouldin (DB) index [7] measures average similarity between each cluster and its most similar counterpart. The Gap Statistic [8] compares within-cluster dispersion against a null reference distribution. The Dunn index [9] computes the ratio of minimum inter-cluster to maximum intra-cluster distance. More recent indices — the KL index [10], the Hartigan Statistic [11], the Jump Statistic [12], and the McClain–Rao index [13] — continue to refine geometric and algebraic criteria for partition quality.
 
 Comprehensive benchmark studies [3], [14] have established several empirical regularities: the CH index and Silhouette are among the most reliable overall; the Dunn index is sensitive to noise; and performance degrades markedly with irrelevant features or non-convex cluster shapes. Despite this diversity, virtually all CVIs share the same geometric paradigm: they evaluate *partitions* produced by a clustering algorithm, optimizing partition quality without reference to the statistical significance of the discovered clusters.
 
@@ -34,7 +34,7 @@ A parallel literature on mode clustering [17]–[19] has established that densit
 
 ### 1.3 The Gap Between Statistics and Cluster Validation
 
-The CVI literature and the modality testing literature have developed in striking isolation. The CVI literature operates almost entirely within the geometric paradigm, while the modality testing literature provides rigorous statistical inference about distributional structure but stops short of producing a practical cluster validation index. As we detail in §2.3, even indices that incorporate distributional ratios (Hartigan [11], KL [10], Jump [12]) remain fundamentally tied to $k$-means partition evaluation and do not perform formal multimodality testing. This gap motivates our approach: bridging modality testing theory with practical cluster validation.
+The CVI literature and the modality testing literature have developed in striking isolation. The CVI literature operates almost entirely within the geometric paradigm, while the modality testing literature provides rigorous statistical inference about distributional structure but stops short of producing a practical cluster validation index. As we detail in §2.3, even indices that incorporate distributional ratios (Hartigan [11], KL [10], Jump [12]) remain inherently tied to $k$-means partition evaluation and do not perform formal multimodality testing. This gap motivates our approach: bridging modality testing theory with practical cluster validation.
 
 ### 1.4 Contributions
 
@@ -42,9 +42,9 @@ This paper bridges the gap between statistical modality testing and practical cl
 
 1. **A new CVI framework grounded in statistical modality testing.** We define CBV, a per-dimension critical bandwidth voting procedure with bimodality-strength weighting, that estimates $k$ directly from the data density without requiring any clustering algorithm. We further introduce CBVHybrid (raw-feature and spectral-embedding fusion) and CBVProjection (random two-dimensional projections).
 
-2. **Comprehensive empirical evaluation.** We benchmark CBV against 10 established CVIs — Silhouette, CH, DB, Gap Statistic, Dunn, DUD, Hartigan, KL, Jump, and McClain–Rao — on 58 datasets (44 synthetic, 14 real) spanning diverse cluster configurations, reporting exact-match accuracy, mean absolute error, $\pm 1$ accuracy, and Adjusted Rand Index across 5 random seeds, with post-hoc pairwise statistical testing.
+2. **Comprehensive empirical evaluation.** We benchmark CBV against 10 established CVIs — Silhouette, CH, DB, Gap Statistic, Dunn, Hartigan, KL, Jump, and McClain–Rao — on 58 datasets (44 synthetic, 14 real) spanning diverse cluster configurations, reporting exact-match accuracy, mean absolute error, $\pm 1$ accuracy, and Adjusted Rand Index across 5 random seeds, with post-hoc pairwise statistical testing.
 
-3. **Demonstration of structural complementarity.** We show that CBV and geometric CVIs succeed on fundamentally different data regimes. CBV detects cluster structure in datasets where geometric indices fail — particularly those with overlapping but dimensionally separable clusters — while geometric indices excel where CBV is misled. Their disagreements are systematically informative, not random.
+3. **Demonstration of structural complementarity.** We show that CBV and geometric CVIs succeed on structurally different data regimes. CBV detects cluster structure in datasets where geometric indices fail — particularly those with overlapping but dimensionally separable clusters — while geometric indices excel where CBV is misled. Their disagreements are systematically informative, not random.
 
 4. **Characterization of failure modes and robustness properties.** We identify specific failure categories for CBV (non-convex shapes, high-$k$ collapse, correlated dimensions) and characterize its robustness under noise dimensions, variance heterogeneity, and cluster imbalance. We evaluate bandwidth selection strategies (Silverman vs. Sheather–Jones) and show that Silverman's rule provides superior robustness despite the Sheather–Jones bandwidth being 0.51$\times$ smaller on average.
 
@@ -62,7 +62,7 @@ The problem of estimating the number of clusters has generated a substantial lit
 
 **Reference-distribution indices.** The Gap Statistic [8] compares the observed within-cluster dispersion against its expected value under a uniform null reference distribution, selecting the smallest $k$ for which the gap exceeds a threshold. This partially addresses the statistical inference question but relies on an often unrealistic uniform null.
 
-**Distributional-ratio indices.** The Hartigan statistic [11] computes $\mathrm{Hart}(k) = (W_k / W_{k+1} - 1)(n - k - 1)$, where $W_k$ is the within-cluster sum of squares for $k$ clusters, selecting $k$ as the largest value where $\mathrm{Hart}(k)$ exceeds a threshold (typically 10). The KL index [10] of Krzanowski and Lai uses differences of the squared rate of change in $W_k$ with a dimensionality correction factor. The Jump statistic [12] of Sugar and James transforms within-cluster dispersion via a power law and identifies jumps in the transformed criterion. The McClain–Rao index [13] compares the within-cluster dispersion ratio between consecutive $k$ values against a reference distribution. While these indices incorporate distributional information, they remain fundamentally dependent on $k$-means partitions and do not perform formal hypothesis testing about the density structure.
+**Distributional-ratio indices.** The Hartigan Statistic [11] computes $\mathrm{Hart}(k) = (W_k / W_{k+1} - 1)(n - k - 1)$, where $W_k$ is the within-cluster sum of squares for $k$ clusters, selecting $k$ as the largest value where $\mathrm{Hart}(k)$ exceeds a threshold (typically 10). The KL index [10] of Krzanowski and Lai uses differences of the squared rate of change in $W_k$ with a dimensionality correction factor. The Jump Statistic [12] of Sugar and James transforms within-cluster dispersion via a power law and identifies jumps in the transformed criterion. The McClain–Rao index [13] compares the within-cluster dispersion ratio between consecutive $k$ values against a reference distribution. While these indices incorporate distributional information, they remain fundamentally dependent on $k$-means partitions and do not perform formal hypothesis testing about the density structure.
 
 **Recent advances.** A Bayesian CVI [23] formulates cluster validation as posterior inference. The CNMBI index [24] uses center pairwise matching for high-dimensional data. The BWDM index [25] introduces a nonparametric validation approach for scalability. A KDE-based CVI [26] uses density estimation to assess clustering quality, though without the specific theoretical guarantees of critical bandwidth testing. Feature rescaling factors [27] address the noise-feature problem by learning dimension-specific weights during validation. Despite this diversity, all of the above — including these recent proposals — evaluate *partitions* produced by a clustering algorithm and do not directly test the statistical hypothesis that the density has a given number of modes. We note that the KDE-based CVI of [26] is the closest related work to CBV in terms of using density estimation, but it evaluates partition quality (via density-based scoring) rather than estimating $k$ from modality structure; a direct comparison would require re-implementing their method, which is beyond the scope of this work.
 
@@ -84,7 +84,7 @@ The recent `critband` package [20], [21] provides a Python implementation of cri
 
 As detailed in §1.3, the CVI and modality testing literatures have developed in isolation. Here we characterize this gap more precisely. The fundamental disconnect is one of *objectives*: geometric CVIs optimize a partition-quality score (Silhouette, CH, DB, Gap), while modality testing performs inference about density structure (Silverman, Dip Test, excess mass). These objectives are related — the number of density modes provides evidence for the number of clusters — but the existing literature has not operationalized this connection into a practical index.
 
-Our work bridges this gap. We operationalize critical bandwidth testing — developed over four decades in the statistics literature — as a practical CVI that produces a single $\hat{k}$ estimate directly from the data distribution. This estimate can be evaluated on the same terms as any geometric CVI, while providing fundamentally different information: not the quality of a partition, but the statistical evidence for a given number of modes in the underlying density. The next section formalizes this bridge through the CBV algorithm.
+Our work bridges this gap. We operationalize critical bandwidth testing — developed over four decades in the statistics literature — as a practical CVI that produces a single $\hat{k}$ estimate directly from the data distribution. This estimate can be evaluated on the same terms as any geometric CVI, while providing structurally different information: not the quality of a partition, but the statistical evidence for a given number of modes in the underlying density. The next section formalizes this bridge through the CBV algorithm.
 
 ---
 
@@ -170,7 +170,7 @@ $$t(d) = 1.0 + 0.5\left(1 - e^{-d / \tau}\right)$$
 
 where $\tau = 15$ is a scaling parameter and $d$ is the number of features. This adaptation is motivated by the observation that in high-dimensional data, 1D projections of well-separated clusters produce overlapping marginal modes due to projection-induced compression. The tolerance gradually increases from $t \approx 1.0$ (for low-dimensional data, where modes are sharp) toward $t \approx 1.5$ (for high-dimensional data, where modes are blurred by projection), compensating for this geometric effect.
 
-**Selection of $\tau = 15$.** The parameter $\tau$ controls the rate at which tolerance increases with dimensionality: smaller $\tau$ causes faster saturation (risking false mode detection), while larger $\tau$ causes slower increase (risking missed modes). Table II shows the adaptive tolerance $t(d)$ for representative dimensionalities across $\tau$ values.
+**Selection of $\tau = 15$.** The parameter $\tau$ controls the rate at which tolerance increases with dimensionality: smaller $\tau$ causes faster saturation (risking false mode detection), while larger $\tau$ causes slower increase (risking missed modes). Table I shows the adaptive tolerance $t(d)$ for representative dimensionalities across $\tau$ values.
 
 **TABLE I. Adaptive Tolerance $t(d)$ for Different $\tau$ Values**
 
@@ -378,7 +378,7 @@ We assess significance using:
 
 ### 5.1 Overall Accuracy
 
-Table I reports the overall exact-match accuracy across 58 datasets, averaged over 5 random seeds.
+Table II reports the overall exact-match accuracy across 58 datasets, averaged over 5 random seeds.
 
 **TABLE II. Benchmark Accuracy (Mean $\pm$ Std Across 5 Seeds)**
 
@@ -397,13 +397,13 @@ Table I reports the overall exact-match accuracy across 58 datasets, averaged ov
 
 The Gap Statistic leads at 53.8%, followed by CBV at 51.4%. CBV ranks second in exact-match accuracy and achieves the **lowest variance** ($\sigma = 0.8\%$) among all indices, indicating high reliability across random seeds. CBV's $\pm 1$ accuracy (69.0%) ties the Gap Statistic, confirming that when CBV errs, it errs by a small margin.
 
-The Friedman test across all 10 indices and 58 datasets yields $\chi^2 = 247.6$, $p < 0.0001$, confirming highly significant performance differences. Notably, the post-hoc analysis (below) reveals that CBV and the Gap Statistic are not significantly different from each other ($p = 0.808$), placing them in the same top-performing tier.
+The Friedman test across all 10 indices and 58 datasets yields $\chi^2 = 247.6$, $p < 0.0001$, confirming highly significant performance differences. The post-hoc analysis (below) reveals that CBV and the Gap Statistic are not significantly different from each other ($p = 0.808$), placing them in the same top-performing tier.
 
 **Post-hoc pairwise analysis.** To identify which pairs of indices differ significantly, we conduct paired Wilcoxon signed-rank tests with Holm–Bonferroni correction ($\alpha = 0.05$, $m = 45$ pairwise comparisons). The Nemenyi critical difference is CD $= 1.779$. Key findings: (i) CBV vs. Gap Statistic: $\Delta = -0.017$, $p = 0.808$ — no significant difference, confirming they are statistically equivalent; (ii) CBV vs. CH Index: $\Delta = +0.069$, $p = 0.317$ — not significant; (iii) CBV significantly outperforms Hartigan ($p < 0.001$), McClain–Rao ($p < 0.001$), Dunn ($p = 0.0003$), and Davies–Bouldin ($p = 0.0008$). These results confirm that CBV belongs to the top-performing tier alongside the Gap Statistic, with no statistically significant difference between them.
 
 ### 5.2 Multi-Metric Comparison
 
-Table I reveals that no single index dominates across all metrics. While the Gap Statistic leads in exact-match accuracy, CBV leads in score stability ($\sigma = 0.8\%$ vs. $1.4\%$). The CH index achieves the highest ARI (0.596) despite lower accuracy (44.8%), indicating that its errors are systematically smaller in terms of clustering quality. Silhouette achieves high ARI (0.581) despite moderate accuracy (38.3%), suggesting its errors are also relatively mild.
+Table II reveals that no single index dominates across all metrics. While the Gap Statistic leads in exact-match accuracy, CBV leads in score stability ($\sigma = 0.8\%$ vs. $1.4\%$). The CH index achieves the highest ARI (0.596) despite lower accuracy (44.8%), indicating that its errors are systematically smaller in terms of clustering quality. Silhouette achieves high ARI (0.581) despite moderate accuracy (38.3%), suggesting its errors are also relatively mild.
 
 CBV occupies a distinctive position: second in accuracy, competitive in $\pm 1$ accuracy, and with the lowest variance. This stability profile is valuable in practice, where consistent performance across datasets is often more important than occasional peaks.
 
@@ -464,7 +464,7 @@ The disagreement signal between CBV and geometric indices is itself informative:
 
 ### 5.6 CBVProjection Evaluation
 
-Table V compares the random 2D projection variant against CBVHybrid on the full 58-dataset benchmark (single seed = 42).
+Table VI compares the random 2D projection variant against CBVHybrid on the full 58-dataset benchmark (single seed = 42).
 
 **TABLE VI. CBVVariant Comparison**
 
@@ -523,7 +523,7 @@ The CBVProjection variant partially addresses this limitation by analyzing rando
 
 ### 6.4 Limitations
 
-**Non-convex shapes**: CBV fails on some non-convex geometries (e.g., circles\_factor0.5\_noise0.05), where 1D marginals produce spurious modes. Notably, CBV correctly handles all three moons datasets (noise $\in \{0.05, 0.1, 0.15\}$), achieving CBV-unique successes on two of them where all geometric CVIs fail. While CBVHybrid's spectral fusion helps, this remains the most significant structural limitation. Geometric indices, particularly spectral variants, remain superior for non-convex data.
+**Non-convex shapes**: CBV fails on some non-convex geometries (e.g., circles\_factor0.5\_noise0.05), where 1D marginals produce spurious modes. CBV correctly handles all three moons datasets (noise $\in \{0.05, 0.1, 0.15\}$), achieving CBV-unique successes on two of them where all geometric CVIs fail. While CBVHybrid's spectral fusion helps, this remains the most significant structural limitation. Geometric indices, particularly spectral variants, remain superior for non-convex data.
 
 **High-$k$ collapse**: CBV underestimates $k$ when the true number exceeds 4–5, due to mode overlap in 1D projections. This limits CBV's applicability to datasets with a moderate number of clusters.
 
@@ -571,7 +571,7 @@ Based on our comprehensive evaluation, we offer the following guidance for pract
 
 We introduced the Critical Bandwidth Validation (CBV) index, the first CVI using critical bandwidth modality testing. CBV reframes the cluster-count problem from geometric partition optimization to statistical inference about the data density, offering a theoretically distinct alternative to established CVIs.
 
-On a comprehensive benchmark of 58 datasets evaluated against 10 established CVIs across 5 random seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy, ranking second behind the Gap Statistic ($53.8\%$) and above all geometric indices. CBV exhibits the lowest variance across random seeds, indicating high reliability. Critically, CBV and geometric CVIs succeed on structurally different data regimes — their disagreements are informative, not random — establishing CBV as a complementary diagnostic tool rather than a mere replacement.
+On a comprehensive benchmark of 58 datasets evaluated against 10 established CVIs across 5 random seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy, ranking second behind the Gap Statistic ($53.8\%$) and above all geometric indices. CBV exhibits the lowest variance across random seeds, indicating high reliability. Importantly, CBV and geometric CVIs succeed on structurally different data regimes — their disagreements are informative, not random — establishing CBV as a complementary diagnostic tool rather than a mere replacement.
 
 We further characterized CBV's failure modes (non-convex shapes, high-$k$ collapse, correlated dimensions), evaluated bandwidth selection strategies (Silverman recommended over Sheather–Jones), and assessed the CBVProjection variant (random 2D projections). These analyses provide a clear roadmap for practitioners: CBV is most effective when features are approximately independent and clusters have moderate complexity, and should be combined with geometric indices for robust cluster validation.
 
