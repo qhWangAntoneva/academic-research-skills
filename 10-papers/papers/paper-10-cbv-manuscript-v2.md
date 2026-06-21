@@ -392,6 +392,8 @@ The Gap Statistic leads at 53.8%, followed by CBV at 51.4%. CBV ranks second in 
 
 The Friedman test across all 10 indices and 58 datasets yields $\chi^2 = 247.6$, $p < 0.0001$, confirming highly significant performance differences.
 
+**Post-hoc pairwise analysis.** To identify which pairs of indices differ significantly, we conduct paired Wilcoxon signed-rank tests with Holm–Bonferroni correction ($\alpha = 0.05$, $m = 45$ pairwise comparisons). The Nemenyi critical difference is CD $= 1.779$. Key findings: (i) CBV vs. Gap Statistic: $\Delta = -0.017$, $p = 0.808$ — no significant difference, confirming they are statistically equivalent; (ii) CBV vs. CH Index: $\Delta = +0.069$, $p = 0.317$ — not significant; (iii) CBV significantly outperforms Hartigan ($p < 0.001$), McClain–Rao ($p < 0.001$), Dunn ($p = 0.0003$), and Davies–Bouldin ($p = 0.0008$). These results confirm that CBV belongs to the top-performing tier alongside the Gap Statistic, with no statistically significant difference between them.
+
 ### 5.2 Multi-Metric Comparison
 
 Table I reveals that no single index dominates across all metrics. While the Gap Statistic leads in exact-match accuracy, CBV leads in score stability ($\sigma = 0.8\%$ vs. $1.4\%$). The CH index achieves the highest ARI (0.596) despite lower accuracy (44.8%), indicating that its errors are systematically smaller in terms of clustering quality. Silhouette achieves high ARI (0.581) despite moderate accuracy (38.3%), suggesting its errors are also relatively mild.
@@ -571,6 +573,8 @@ This research was conducted using the critband package [20], [21] for critical b
 ## Data Availability
 
 All data used in this study is publicly available. Synthetic datasets were generated using scikit-learn. Real-world datasets are available from the UCI Machine Learning Repository, OpenML, and scikit-learn's built-in datasets. The complete benchmark results and implementation code are available at [repository URL].
+
+**Supplementary Materials.** The following supplementary materials are provided: (S1) per-dataset results table (58 datasets × 10 indices × 5 seeds, including $\hat{k}$ and correctness for each); (S2) pairwise complementarity matrix (CSV); (S3) figures (complementarity scatter, Jaccard bar chart, correctness heatmap, accuracy comparison, rank comparison). These are available at [supplementary URL].
 
 ---
 
