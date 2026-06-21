@@ -1,0 +1,99 @@
+19:19:13 ============================================================
+19:19:13   Silhouette     : 0.20 → 1.00  (ratio=5.00)
+19:19:13 Phase D-1: Correlated-Dimension Ablation Study (P0-6)
+19:19:13 ============================================================
+19:19:13   Davies-Bouldin : 0.20 → 1.00  (ratio=5.00)
+19:19:13   Hartigan       : 0.00 → 0.00  (ratio=nan)
+19:19:13 
+Done. Output: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\ablation_correlated_dims.csv
+19:19:18   n_corr= 0 s=0.0 →  2 feats
+19:19:21   n_corr= 0 s=0.5 →  2 feats
+19:19:24   n_corr= 0 s=0.9 →  2 feats
+19:19:28   n_corr=20 (per=10), s=0.9 → 22 feats
+19:19:28 
+Raw results → C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\ablation_correlated_dims.csv
+19:19:28 
+============================================================
+19:19:28 Accuracy by corr_strength (mean over n_corr_dims)
+19:19:28 ============================================================
+19:19:28   CBV            : 0.0=0.20  0.4=0.20  0.7=0.40  0.9=0.60
+19:19:28   Gap            : 0.0=0.20  0.4=1.00  0.7=1.00  0.9=0.60
+19:19:28   CH             : 0.0=0.20  0.4=0.40  0.7=1.00  0.9=1.00
+19:19:28   Silhouette     : 0.0=0.20  0.4=0.40  0.7=1.00  0.9=1.00
+19:19:28   Davies-Bouldin : 0.0=0.20  0.4=0.40  0.7=1.00  0.9=1.00
+19:19:28   Hartigan       : 0.0=0.00  0.4=0.20  0.7=0.00  0.9=0.00
+19:19:28 
+============================================================
+19:19:28 Accuracy by n_corr_dims (mean over corr_strength)
+19:19:28 ============================================================
+19:19:28   CBV            :  0=1.00   2=0.50   4=0.00  10=0.00  20=0.25
+19:19:28   Gap            :  0=1.00   2=0.75   4=0.75  10=0.50  20=0.50
+19:19:28   CH             :  0=1.00   2=0.75   4=0.50  10=0.50  20=0.50
+19:19:28   Silhouette     :  0=1.00   2=0.75   4=0.50  10=0.50  20=0.50
+19:19:28   Davies-Bouldin :  0=1.00   2=0.75   4=0.50  10=0.50  20=0.50
+19:19:28   Hartigan       :  0=0.00   2=0.00   4=0.00  10=0.00  20=0.25
+19:19:28 
+============================================================
+19:19:28 MAE by corr_strength (mean over n_corr_dims)
+19:19:28 ============================================================
+19:19:28   CBV            : 0.0=0.80  0.4=0.80  0.7=0.60  0.9=0.40
+19:19:28   Gap            : 0.0=0.80  0.4=0.00  0.7=0.00  0.9=2.80
+19:19:28   CH             : 0.0=0.80  0.4=0.60  0.7=0.00  0.9=0.00
+19:19:28   Silhouette     : 0.0=0.80  0.4=0.60  0.7=0.00  0.9=0.00
+19:19:28   Davies-Bouldin : 0.0=5.20  0.4=0.60  0.7=0.00  0.9=0.00
+19:19:28   Hartigan       : 0.0=5.00  0.4=4.80  0.7=5.60  0.9=7.00
+19:19:28 
+============================================================
+19:19:28 Degradation: accuracy at s=0.9 vs s=0.0 (averaged over n_corr_dims)
+19:19:28 ============================================================
+19:19:28   CBV            : 0.20 → 0.60  (ratio=3.00)
+19:19:28   Gap            : 0.20 → 0.60  (ratio=3.00)
+19:19:28   CH             : 0.20 → 1.00  (ratio=5.00)
+19:19:28   Silhouette     : 0.20 → 1.00  (ratio=5.00)
+19:19:28   Davies-Bouldin : 0.20 → 1.00  (ratio=5.00)
+19:19:28   Hartigan       : 0.00 → 0.00  (ratio=nan)
+19:19:28 
+============================================================
+19:19:28 Phase D-1 complete. Output: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\ablation_correlated_dims.csv
+19:19:28 ============================================================
+19:19:30   n_corr= 4 s=0.0 →  6 feats
+19:19:33   n_corr= 4 s=0.5 →  6 feats
+19:19:37   n_corr= 4 s=0.9 →  6 feats
+19:19:42   n_corr=10 s=0.0 → 12 feats
+19:19:49   n_corr=10 s=0.5 → 12 feats
+19:19:55   n_corr=10 s=0.9 → 12 feats
+19:20:03   n_corr=20 s=0.0 → 22 feats
+19:20:11   n_corr=20 s=0.5 → 22 feats
+19:20:21   n_corr=20 s=0.9 → 22 feats
+19:20:21 
+Saved → C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\ablation_correlated_dims.csv
+19:20:21 
+=== Accuracy by corr_strength (mean over n_corr_dims) ===
+19:20:21   CBV            : 0.0=0.25  0.5=0.25  0.9=0.50
+19:20:21   CH             : 0.0=0.25  0.5=0.50  0.9=1.00
+19:20:21   Silhouette     : 0.0=0.25  0.5=0.25  0.9=1.00
+19:20:21   Davies-Bouldin : 0.0=0.25  0.5=0.25  0.9=1.00
+19:20:21   Hartigan       : 0.0=0.00  0.5=0.25  0.9=0.00
+19:20:21 
+=== Accuracy by n_corr_dims (mean over corr_strength) ===
+19:20:21   CBV            :  0=1.00   4=0.00  10=0.00  20=0.33
+19:20:21   CH             :  0=1.00   4=0.67  10=0.33  20=0.33
+19:20:21   Silhouette     :  0=1.00   4=0.33  10=0.33  20=0.33
+19:20:21   Davies-Bouldin :  0=1.00   4=0.33  10=0.33  20=0.33
+19:20:21   Hartigan       :  0=0.00   4=0.00  10=0.00  20=0.33
+19:20:21 
+=== MAE by corr_strength (mean over n_corr_dims) ===
+19:20:21   CBV            : 0.0=0.75  0.5=0.75  0.9=0.50
+19:20:21   CH             : 0.0=0.75  0.5=0.50  0.9=0.00
+19:20:21   Silhouette     : 0.0=0.75  0.5=0.75  0.9=0.00
+19:20:21   Davies-Bouldin : 0.0=4.75  0.5=0.75  0.9=0.00
+19:20:21   Hartigan       : 0.0=4.50  0.5=4.25  0.9=7.00
+19:20:21 
+=== Degradation: s=0.9 vs s=0.0 ===
+19:20:21   CBV            : 0.25 → 0.50  (ratio=2.00)
+19:20:21   CH             : 0.25 → 1.00  (ratio=4.00)
+19:20:21   Silhouette     : 0.25 → 1.00  (ratio=4.00)
+19:20:21   Davies-Bouldin : 0.25 → 1.00  (ratio=4.00)
+19:20:21   Hartigan       : 0.00 → 0.00  (ratio=nan)
+19:20:21 
+Done. Output: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\ablation_correlated_dims.csv

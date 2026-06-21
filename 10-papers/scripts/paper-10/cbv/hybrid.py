@@ -113,6 +113,7 @@ class CBVHybrid:
         random_state: Optional[int] = None,
         h_crit_tolerance: float = 1.3,
         mode: str = "threshold",
+        bandwidth_method: str = "silverman",
         vote_method: str = "mode",
         n_components: int = 10,
         affinity: str = "nearest_neighbors",
@@ -131,6 +132,7 @@ class CBVHybrid:
         self.random_state = random_state
         self.h_crit_tolerance = h_crit_tolerance
         self.mode = mode
+        self.bandwidth_method = bandwidth_method
         self.vote_method = vote_method
         self.n_components = n_components
         self.affinity = affinity
@@ -191,6 +193,7 @@ class CBVHybrid:
             random_state=self.random_state,
             h_crit_tolerance=hct,
             mode=self.mode,
+            bandwidth_method=self.bandwidth_method,
             vote_method=self.vote_method,
             weight_method=self.weight_method,
         )
@@ -207,6 +210,7 @@ class CBVHybrid:
             random_state=self.random_state,
             h_crit_tolerance=hct,
             mode=self.mode,
+            bandwidth_method=self.bandwidth_method,
             vote_method=self.vote_method,
             n_components=self.n_components,
             affinity=self.affinity,

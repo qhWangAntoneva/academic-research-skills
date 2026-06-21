@@ -33,6 +33,7 @@ class CBVSpectral(CBVIndex):
         random_state: Optional[int] = None,
         h_crit_tolerance: float = 1.3,
         mode: str = "threshold",
+        bandwidth_method: str = "silverman",
         vote_method: str = "weighted_mean",
         n_components: int = 10,
         affinity: str = "nearest_neighbors",
@@ -45,6 +46,7 @@ class CBVSpectral(CBVIndex):
             random_state=random_state,
             h_crit_tolerance=h_crit_tolerance,
             mode=mode,
+            bandwidth_method=bandwidth_method,
             vote_method=vote_method,
             weight_method=weight_method,
         )
@@ -80,6 +82,7 @@ class CBVSpectral(CBVIndex):
             random_state=self.random_state,
             h_crit_tolerance=self.h_crit_tolerance,
             mode=self.mode,
+            bandwidth_method=self.bandwidth_method,
             vote_method=self.vote_method,
         )
         raw_estimator.fit(X)

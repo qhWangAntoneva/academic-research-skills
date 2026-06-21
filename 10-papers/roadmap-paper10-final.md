@@ -1,7 +1,7 @@
 # Paper #10 — Revision Roadmap (Phase A-F)
 
-> **Status**: Phase A+B+C complete (Benchmark Expansion)
-> **Next**: Phase D (Advanced Features)
+> **Status**: Phase A+B+C+D+E complete (Full Benchmark)
+> **Next**: Phase F (Manuscript Revision)
 
 ---
 
@@ -54,22 +54,26 @@
 | P1-6 | Expand real benchmark (+8 OpenML datasets) | 3h | Medium | ✅ Done |
 | P1-7 | Complementarity analysis (agreement, disagreement, failure) | 3h | Medium | ✅ Done |
 
-### Phase D: Advanced Features
+### Phase D: Advanced Features ✅
 
-| # | Item | Effort | Priority | Depends On |
-|---|------|:------:|:--------:|:----------:|
-| P0-6 | Correlated-dimension ablation study | 2h | **P0** | — |
-| P1-3 | Sheather-Jones bandwidth option | 3h | High | Phase B |
-| P1-8 | CBV with random 2D projections | 5h | Medium | Phase B |
-| P1-9 | CBVHybrid spectral component spec | 0.5h | Low | Phase B |
+| # | Item | Effort | Priority | Depends On | Status |
+|---|------|:------:|:--------:|:----------:|:------:|
+| P0-6 | Correlated-dimension ablation study | 2h | **P0** | — | ✅ Done |
+| P1-3 | Sheather-Jones bandwidth option | 3h | High | Phase B | ✅ Done |
+| P1-8 | CBV with random 2D projections | 5h | Medium | Phase B | ✅ Done |
+| P1-9 | CBVHybrid spectral component spec | 0.5h | Low | Phase B | Deferred |
 
-### Phase E: Full Benchmark + Analysis
+**Result**: Ablation shows CBV vulnerable to correlated dims (drops to k=2 at n_corr≥4). SJ bandwidth implemented but Silverman recommended (SJ 0.51× tighter, underestimates k). CBVProjection class: random 2D subspace projections + majority vote, outperforms per-dimension CBV (60% vs 30% on 10 synth datasets).
 
-| # | Item | Effort | Priority |
-|---|------|:------:|:--------:|
-| — | Full multi-seed benchmark run | ~90min | — |
-| P2-4 | k-range expansion analysis | 1h | Low |
-| — | Final accuracy tables, complementarity figures | — | — |
+### Phase E: Full Benchmark + Analysis ✅
+
+| # | Item | Effort | Priority | Status |
+|---|------|:------:|:--------:|:------:|
+| — | Full multi-seed benchmark run | ~90min | — | ✅ Done |
+| P2-4 | k-range expansion analysis | 1h | Low | Deferred |
+| — | Final accuracy tables, complementarity figures | — | — | ✅ Done |
+
+**Result**: 10 indices × 58 datasets × 5 seeds. CBV: 51.4% ± 0.8% (rank #2, lowest variance). Gap: 53.8% ± 1.4%. CBVProjection: 46.6% (50 projections). CBVHybrid: 51.7%.
 
 ### Phase F: Manuscript Revision
 
@@ -94,20 +98,26 @@ Phase A (Quick Wins)    ← DONE
 Phase B (Methodology)   ← DONE
      ↓
 Phase C (Benchmark)     ← DONE
-Phase D (Advanced Feat.) ← NEXT (parallel with C)
+Phase D (Advanced Feat.) ← DONE
      ↓
-Phase E (Full Run)      ← after C+D
+Phase E (Full Run)      ← DONE
      ↓
-Phase F (Manuscript)    ← final, uses all outputs
+Phase F (Manuscript)    ← NEXT (final, uses all outputs)
 ```
 
 ## Key Results to Carry Forward
 
-**Core narrative**: CBV is now tied for #1 in exact-match accuracy (60.6%) while maintaining the **lowest MAE (0.65)** and **highest ±1 accuracy (83.9%)** — no longer just "complementary," CBV matches the best geometry-based CVIs while providing unique diagnostic value.
+**Core narrative (Phase E update)**: On the full benchmark (58 datasets × 5 seeds), CBV ranks **#2 at 51.4% ± 0.8%** behind Gap Statistic (53.8% ± 1.4%). CBV has the **lowest variance** of any index, indicating high reliability. CBV's ±1 accuracy (69.0%) ties Gap Statistic. The Phase B result (CBV tied #1 at 60.6% on 31 datasets) was on a smaller, more favorable benchmark; the 58-dataset expansion reveals CBV's true position.
 
-**Failure modes** (target for Phase C/D fixes):
+**Phase D findings**:
+- CBV is vulnerable to correlated redundant dimensions (P0-6 ablation)
+- SJ bandwidth underperforms Silverman for CBV threshold test (P1-3)
+- CBVProjection (random 2D projections) achieves 46.6%, slightly below CBVHybrid 51.7% (P1-8)
+
+**Failure modes**:
 - Non-convex shapes: 6 failures (spectral fusion helps but not fully)
-- High-k underestimation (k≥5): 5 failures (excess_mass layer, target)
-- Tight-blob overestimation: 2 failures (tolerance calibration P1-1 fixed partially)
-- Noise dimension overwhelm: 2 failures (dim pre-filtering exists but may need tuning)
+- High-k underestimation (k≥5): 5 failures
+- Tight-blob overestimation: 2 failures (tolerance calibration fixed partially)
+- Noise dimension overwhelm: 2 failures (dim pre-filtering exists)
 - Real dataset signal loss: 2 failures (addressed by Phase C expansion)
+- Correlated dims: CBV drops to k=2 at n_corr≥4 (Phase D ablation)

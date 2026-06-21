@@ -1,0 +1,39 @@
+19:59:03 ============================================================
+19:59:03 Phase E: CBVProjection Benchmark
+19:59:03 ============================================================
+19:59:03 
+[1/3] Building datasets...
+19:59:08   Total: 58 datasets
+19:59:09 
+[2/3] Running 3 index variants on 58 datasets...
+20:52:53   Completed in 3223.6s
+20:52:53 
+Raw results → C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\benchmark_projection_results.csv
+20:52:53 
+============================================================
+20:52:53 Accuracy Summary
+20:52:53 ============================================================
+20:52:53   CBVProjection_20    : acc=46.6%  MAE=2.22  ARI=0.530
+20:52:53   CBVProjection_50    : acc=46.6%  MAE=2.22  ARI=0.531
+20:52:53   CBVHybrid           : acc=51.7%  MAE=2.19  ARI=0.519
+20:52:53 
+============================================================
+20:52:53 Head-to-Head: CBVProjection_20 vs CBVHybrid
+20:52:53 ============================================================
+20:52:53   Both correct:       26
+20:52:53   Projection only:    1
+20:52:53   Hybrid only:        4
+20:52:53   Neither correct:    27
+20:52:53 
+  Projection wins on:
+20:52:53     iris (k_true=3, proj_k=3, hybrid_k=2)
+20:52:53 
+  Hybrid wins on:
+20:52:53     moons_noise0.05 (k_true=2, proj_k=3, hybrid_k=2)
+20:52:53     moons_noise0.1 (k_true=2, proj_k=3, hybrid_k=2)
+20:52:53     moons_noise0.15 (k_true=2, proj_k=3, hybrid_k=2)
+20:52:53     parkinsons (k_true=2, proj_k=3, hybrid_k=2)
+20:52:53 
+============================================================
+20:52:53 Phase E (Projection) complete. Output: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\benchmark_projection_results.csv
+20:52:53 ============================================================

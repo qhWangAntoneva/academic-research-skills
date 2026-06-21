@@ -444,3 +444,91 @@ Generating plots (last seed)...
 01:04:20 
   Seed 42...
 01:04:20     11 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'Hartigan', 'KL Index', 'Jump Statistic', 'McClain-Rao', 'CBV']
+19:57:53 ============================================================
+19:57:53 Phase 3: Full Benchmark — Paper #10 (CBV) — Multi-Seed + Multi-Metric
+19:57:53 ============================================================
+19:57:53 
+[1/4] Building datasets...
+19:57:53   Synthetic: 44 datasets
+19:57:59   Real: 14 datasets
+19:57:59   Total: 58 datasets
+19:57:59 
+[2/4] Building indices...
+19:57:59 
+[3/4] Running benchmark across seeds: [42, 73, 123, 256, 999]
+19:57:59 
+  Seed 42...
+19:57:59     11 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'Hartigan', 'KL Index', 'Jump Statistic', 'McClain-Rao', 'CBV']
+20:15:57     Results shape: (58, 24)
+20:15:57 
+  Seed 73...
+20:15:57     11 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'Hartigan', 'KL Index', 'Jump Statistic', 'McClain-Rao', 'CBV']
+20:34:42     Results shape: (58, 24)
+20:34:42 
+  Seed 123...
+20:34:42     11 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'Hartigan', 'KL Index', 'Jump Statistic', 'McClain-Rao', 'CBV']
+20:53:16     Results shape: (58, 24)
+20:53:16 
+  Seed 256...
+20:53:16     11 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'Hartigan', 'KL Index', 'Jump Statistic', 'McClain-Rao', 'CBV']
+21:10:17     Results shape: (58, 24)
+21:10:17 
+  Seed 999...
+21:10:17     11 indices: ['Silhouette', 'CH Index', 'Davies-Bouldin', 'Gap Statistic', 'Dunn Index', 'DUD Index', 'Hartigan', 'KL Index', 'Jump Statistic', 'McClain-Rao', 'CBV']
+21:28:52     Results shape: (58, 24)
+21:28:52 
+  All seeds completed in 5453.8s
+21:28:52 
+[4/4] Computing metrics across seeds...
+21:31:08 
+Multi-seed metrics (mean ± std across 5 seeds):
+21:31:08          index  accuracy_mean  accuracy_std  mae_mean  mae_std  acc_plus1_mean  acc_plus1_std  ari_mean  ari_std
+ Gap Statistic       0.537931  1.442517e-02  2.072414 0.070458        0.689655       0.021116  0.574443 0.004991
+           CBV       0.513793  7.710579e-03  2.182759 0.009443        0.689655       0.000000  0.518369 0.002350
+      CH Index       0.448276  6.206335e-17  2.917241 0.046263        0.637931       0.000000  0.595779 0.000639
+    Silhouette       0.382759  7.710579e-03  2.272414 0.068316        0.624138       0.007711  0.581103 0.002914
+      KL Index       0.341379  2.557310e-02  2.744828 0.061443        0.462069       0.022480  0.568496 0.004337
+Jump Statistic       0.331034  1.442517e-02  4.024138 0.091720        0.448276       0.012191  0.533352 0.003847
+Davies-Bouldin       0.300000  9.443492e-03  3.510345 0.051146        0.500000       0.012191  0.529150 0.000988
+    Dunn Index       0.248276  1.542116e-02  3.517241 0.130739        0.413793       0.012191  0.461173 0.007863
+   McClain-Rao       0.110345  9.443492e-03  6.113793 0.073756        0.127586       0.019658  0.386668 0.002005
+      Hartigan       0.034483  0.000000e+00  5.203448 0.028330        0.155172       0.000000  0.399159 0.001785
+21:31:08 
+  Multi-seed metrics saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\metrics_multi_seed.csv
+21:31:08 
+Per-seed accuracy:
+21:31:08  seed  Silhouette  CH Index  Davies-Bouldin  Gap Statistic  Dunn Index  Hartigan  KL Index  Jump Statistic  McClain-Rao      CBV
+   42    0.396552  0.448276        0.310345       0.551724    0.241379  0.034483  0.344828        0.344828     0.120690 0.517241
+   73    0.379310  0.448276        0.293103       0.551724    0.258621  0.034483  0.310345        0.327586     0.103448 0.500000
+  123    0.379310  0.448276        0.310345       0.517241    0.258621  0.034483  0.344828        0.310345     0.103448 0.517241
+  256    0.379310  0.448276        0.293103       0.534483    0.224138  0.034483  0.379310        0.344828     0.103448 0.517241
+  999    0.379310  0.448276        0.293103       0.534483    0.258621  0.034483  0.327586        0.327586     0.120690 0.517241
+21:31:08 
+Mean rank (1 = best) — last seed reference:
+21:31:08 Silhouette        2.862069
+CH Index          3.379310
+Gap Statistic     3.844828
+Davies-Bouldin    5.103448
+KL Index          5.534483
+CBV               6.137931
+Dunn Index        6.224138
+Hartigan          7.120690
+Jump Statistic    7.327586
+McClain-Rao       9.775862
+dtype: float64
+21:31:08 
+Friedman test: chi2=247.602, p=0.0000
+21:31:08   → Significant (p < 0.05)
+21:31:08 
+Generating plots (last seed)...
+21:31:09 
+============================================================
+21:31:09 Phase 3 complete. All outputs in: C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results
+21:31:09   - metrics_multi_seed.csv     (mean±std across 5 seeds)
+21:31:09   - accuracy_per_seed.csv      (per-seed accuracy breakdown)
+21:31:09   - results_seed_*.csv         (per-seed raw results)
+21:31:09   - benchmark_results.csv      (combined results)
+21:31:09   - per_dataset_results.csv    (full detail)
+21:31:09   - accuracy_comparison.png    (bar chart)
+21:31:09   - rank_comparison.png        (box plot)
+21:31:09 ============================================================

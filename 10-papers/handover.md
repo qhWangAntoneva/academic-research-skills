@@ -1,185 +1,169 @@
-# Session Handover Log — Paper #10 (CBV)
+# Handover Document — Paper #10 (CBV)
 
-> **Paper**: Critical Bandwidth as a Cluster Validation Index
-> **Status**: Major Revision — Phase A+B+C complete, Phase D next
-> **Target**: JMLR
-
----
-
-## Project Overview
-
-Paper #10 proposes **CBV (Critical Bandwidth Validation)**, the first systematic application of Silverman's critical bandwidth theory to internal cluster validation. CBV answers "how many natural groups does the data support?" (statistical inference) rather than "which k scores best?" (geometric optimization).
-
-**Core references** (appear in all 10 papers):
-- Zhang, R. & Wang, Q. (2026). critband: A Python Package for Critical Bandwidth Analysis of Multimodal Distributions. arXiv:2605.18686.
-- critband v0.2.3 [Computer software]. https://pypi.org/project/critband/
+**Handover date:** 2026-06-21
+**From:** Session #15 agent
+**To:** Next agent section (Phase F-9: Reviewer Feedback)
 
 ---
 
-## Current State — After Phase B Revision
+## Executive Summary
 
-### Benchmark Results (Multi-Seed, Multi-Metric — Phase C Scope)
-
-**10 indices** (6 pre-Phase C + 4 Phase C) on **50 datasets** (44 synth + 6 core real) — single seed=42 baseline:
-
-| Index | Accuracy |
-|------|:--------:|
-| Gap Statistic | **62.0%** |
-| **CBV** | **56.0%** |
-| CH Index | 48.0% |
-| Silhouette | 44.0% |
-| KL Index | 38.0% |
-| Jump Statistic | 36.0% |
-| Davies-Bouldin | 32.0% |
-| Dunn Index | 24.0% |
-| McClain-Rao | 10.0% |
-| Hartigan | 4.0% |
-
-CBV maintains strong performance (#2 of 10) on the expanded benchmark. New indices KL and Jump provide additional comparison baselines. Hartigan's known overestimation bias shows in low accuracy on well-separated data.
-
-### Phase B Results (carried forward)
-5 seeds [42, 73, 123, 256, 999] — mean ± std across 31 datasets:
-
-| Index | Accuracy | MAE | ±1 Acc | ARI |
-|-------|:--------:|:---:|:------:|:---:|
-| **CBV** | **60.6% ± 1.4%** | **0.65 ± 0.01** | **83.9% ± 0.0%** | 0.583 ± 0.006 |
-| Gap Statistic | 60.6% ± 3.5% | 1.10 ± 0.03 | 73.5% ± 1.4% | 0.607 ± 0.003 |
-| CH Index | 54.8% ± 0.0% | 1.94 ± 0.09 | 74.2% ± 0.0% | 0.645 ± 0.003 |
-| Silhouette | 45.8% ± 1.4% | 1.64 ± 0.12 | 65.2% ± 1.4% | 0.643 ± 0.006 |
-| Davies-Bouldin | 32.3% ± 0.0% | 3.05 ± 0.17 | 51.6% ± 0.0% | 0.565 ± 0.002 |
-| Dunn Index | 24.5% ± 1.8% | 2.70 ± 0.17 | 42.6% ± 1.4% | 0.512 ± 0.012 |
-
-### Narrative
-CBV improved from complementary to **top-tier** performance:
-- **Tied #1 accuracy (60.6%)** — matches Gap Statistic with lower variance (1.4% vs 3.5%)
-- **Lowest MAE (0.65)** — when CBV misses, it misses by less than any other index
-- **Highest ±1 accuracy (83.9%)** — still the best at being close
-- Phase A→B improvement: **+16.7pp accuracy**, MAE −18%
+论文 v2 已完成重写（8253 词，TNNLS 格式），三位 TNNLS Reviewer 审核结果为 Major Revision。当前需要根据 7 个 CRITICAL 和 15 个 MAJOR 反馈项修订论文。核心修复：量化互补性、添加聚合理论、修正参考文献、添加实践者指南。
 
 ---
 
-## Revision Roadmap (Phase A-F)
+## What Was Done in This Section (Sessions #13-#15)
 
-| Phase | Description | Hours | Status |
-|:-----:|-------------|:-----:|:------:|
-| **A** | Quick Credibility Wins | 7.5 | ✅ **Done** |
-| **B** | Methodology Hardening | 12 | ✅ **Done** |
-| **C** | Benchmark Expansion | 11 | ✅ **Done** |
-| **D** | Advanced Features | 8 | Pending |
-| **E** | Full Benchmark | 4 | Pending |
-| **F** | Manuscript Revision | 60+ | Pending |
+### Phase D — Advanced Features ✅
+- P0-6: Correlated-dimension ablation study（CBV 对相关维度脆弱）
+- P1-3: Sheather-Jones bandwidth option（Silverman 推荐）
+- P1-8: CBVProjection class（随机 2D 投影，多数投票）
 
-### Phase A — Completed Items
+### Phase E — Full Benchmark ✅
+- 10 indices × 58 datasets × 5 seeds，耗时 ~90min
+- CBV: 51.4% ± 0.8%（rank #2，最低方差）
+- CBVProjection: 46.6%，CBVHybrid: 51.7%
 
-| # | Item | Files Changed |
-|---|------|:-------------|
-| P0-1 | `fast`→`mode` (threshold/bootstrap) | `cbv/index.py`, `spectral.py`, `hybrid.py` |
-| P0-5 | `n_init=3`→`n_init=10` | `comparison/indices.py` |
-| P0-3 | MAE, ±1 Acc, ARI metrics | `run_benchmark.py` |
-| P0-2 | Multi-seed [42,73,123,256,999] | `run_benchmark.py` |
-| — | Fixed CBVHybrid `self.fast` regression | `cbv/hybrid.py` |
-
-### Phase B — Completed Items
-
-| # | Item | Files Changed |
-|---|------|:-------------:|
-| P1-1 | Tolerance calibration: sweep 10 values, optimal=1.30 | `cbv/index.py`, `hybrid.py`, `spectral.py`, `calibration/tolerance_sweep.py` |
-| P1-2 | Multimodal weight: `multimodal_weight()` replaces `bimodality_strength` | `utils/weighting.py`, `cbv/index.py`, `hybrid.py`, `spectral.py` |
-| P1-10 | Weight sensitivity: 3 methods compared, excess_mass best | `calibration/weight_sensitivity.py` |
-
-### Phase C — Completed Items
-
-| # | Item | Files Changed |
-|---|------|:-------------:|
-| P1-4 | New indices: Hartigan, KL, Jump, McClain-Rao | `comparison/indices.py` |
-| P1-5 | +19 synthetic datasets (aniso, imbalanced, varied-std, high-k, sparse, non-convex, small-n) | `benchmark/synthetic.py` |
-| P1-6 | +8 real datasets (Glass, Yeast, Ecoli, Segmentation, Olivetti Faces, Parkinsons, Ionosphere, Digits full) | `benchmark/real_data.py` |
-| P1-7 | Complementarity analysis: agreement matrix, disagreement profile, failure patterns, unique success sets | `analysis/complementarity.py` |
-
-### Phase D — Advanced Features
-
-| # | Item | Effort |
-|---|------|:------:|
-| P0-6 | Correlated-dimension ablation | 2h |
-| P1-3 | Sheather-Jones bandwidth | 3h |
-| P1-8 | Random 2D projections CBV | 5h |
-
-### Phase E — Full Multi-Seed Benchmark Run
-Run all indices × all datasets × all seeds → final accuracy tables + complementarity figures.
-
-### Phase F — Manuscript Revision
-Full narrative restructure: abstract → §1 introduction → §2 related work → §3 methodology (9 subsections) → §5 results (disagreement headline) → §6 discussion → §7 conclusion. Then re-review cycle (max 2 rounds).
+### Phase F-1 至 F-8 — Manuscript + Reviewer Eval ✅
+- 论文 v2 完整重写（TNNLS 格式，8253 词）
+- 三位 Reviewer 审核：Major Revision（7 CRITICAL, 15 MAJOR, 13 MINOR）
 
 ---
 
-## File Inventory
+## What Remains for Next Agent (Phase F-9)
 
-```
-scripts/paper-10/
-  cbv/
-    index.py          ← CBVIndex (mode param: threshold/bootstrap)
-    spectral.py       ← CBVSpectral (mode param)
-    hybrid.py         ← CBVHybrid (mode param, excess_mass, adaptive_tolerance)
-    __init__.py       ← Exports CBVHybrid
-  benchmark/
-    synthetic.py      ← SyntheticDataGenerator (44 datasets: 25 core + 19 Phase C)
-    real_data.py      ← RealDataLoader (14 datasets: 6 core + 8 OpenML)
-    runner.py         ← BenchmarkRunner (sequential/parallel, summarize, plots)
-  comparison/
-    indices.py        ← 10 CVI wrappers, CVIWrapper, get_all_indices (n_init=10)
-    report.py         ← ComparisonReport
-    __init__.py       ← Exports CVIWrapper, ComparisonReport, get_all_indices
-  analysis/
-    complementarity.py ← ComplementarityAnalysis (Phase C: agreement, disagreement, failure, unique sets)
-    __init__.py
-  utils/
-    weighting.py      ← compute_dimension_weights, weighted_k_vote
-    k_selection.py    ← elbow_scan
-    preprocessing.py  ← standardize, remove_constant_features
-  calibration/         ← Phase B: tolerance sweep + weight sensitivity
-    tolerance_sweep.py
-    weight_sensitivity.py
-  run_benchmark.py    ← Main entry: multi-seed, multi-metric
+### 第一优先级 — CRITICAL 修复
 
-papers/
-  paper-10-cbv-manuscript.md      ← Full draft v1 (~8,000 words, needs revision)
-  paper-10-cluster-validation.md  ← Research protocol + results (updated Phase A)
+1. **量化互补性** (C1)
+   - 实现简单集合并（OR-ensemble），报告准确率
+   - 计算 CBV vs 每个几何 CVI 的 Jaccard 系数
+   - 生成逐数据集正确/错误矩阵
+   - 文件: `analysis/complementarity.py` 已有基础，需扩展
 
-results/ (from Phase A benchmark)
-  metrics_multi_seed.csv          ← Mean±std across 5 seeds
-  accuracy_per_seed.csv           ← Per-seed accuracy breakdown
-  results_seed_*.csv              ← Raw results per seed (5 files)
-  benchmark_results.csv           ← Combined results (last seed)
-  per_dataset_results.csv         ← Per-dataset detail
-  accuracy_comparison.png         ← Bar chart
-  rank_comparison.png             ← Box plot
+2. **添加聚合理论** (C2)
+   - 添加 §3.X 小节，证明 per-dimension 投票聚合的条件
+   - 至少对各向同性高斯混合的特殊情况给出定理
+   - 分析加权均值舍入偏差
+   - 文件: `papers/paper-10-cbv-manuscript-v2.md` §3.5 附近插入
+
+3. **完善 Algorithm 1** (C3)
+   - 明确定义无 k 满足条件时的默认行为
+   - 添加边界检查：h_crit(k_min) >= t·h_Silver 时的处理
+   - 文件: `papers/paper-10-cbv-manuscript-v2.md` §3.2
+
+4. **修正参考文献** (C7)
+   - 合并 Part 1 和 Part 2 的参考文献为单一列表
+   - 修正 [10]（KL index = Krzanowski & Lai 1988，非 Hartigan）
+   - 补全 [23]-[27] 的作者名和期刊名
+   - 去重，确保全文引用编号一致
+
+5. **精确限定"首创"** (C6)
+   - 将"首个基于临界带宽理论的 CVI"改为"首个使用临界带宽模态测试的 CVI"
+   - 影响位置: Abstract, §1.4, §2.3, §7
+
+6. **明确 seed/n_init 协议** (C5)
+   - 说明 5 个 seed 控制什么（k-means 初始化）
+   - 分别报告 CBV 在各 seed 的准确率（应相同，因为 CBV 是确定性的）
+   - 文件: §4.4, §5.3
+
+### 第二优先级 — MAJOR 修复
+
+7. **添加事后成对比较** (M4)
+   - Nemenyi test 或 paired Wilcoxon + Holm-Bonferroni
+   - 报告哪些配对差异显著
+   - 文件: §5.1 之后插入
+
+8. **添加逐数据集结果表** (M6)
+   - 补充材料：每个数据集 × 每个指标 × 每个 seed 的 k_hat
+   - 文件: 新增 supplementary table
+
+9. **添加实践者指南** (M12)
+   - §6 增加"Practical Recommendations"小节
+   - 何时用 CBV、何时用 Gap、何时用 ensemble
+   - 超参数默认值和敏感性
+
+10. **重构 Abstract** (M10)
+    - 问题 → 缺口 → 方法 → 结果 → 影响
+    - 方法论在动机之后引入
+
+11. **修正标题** (M9)
+    - "Critical Bandwidth Validation: A Statistical Modality Approach to Estimating the Number of Clusters"
+
+12. **证明 τ 参数** (M2)
+    - 说明 τ=15 是先验设定还是调参
+    - 添加 τ 敏感性分析
+
+13. **核函数敏感性** (M3)
+    - 高斯 vs Epanechnikov vs biweight
+
+### 第三优先级 — MINOR 修复
+
+14. 双模态强度数学定义
+15. 加权均值舍入策略
+16. Dip Test 对比（或解释为什么不适合作为 CVI）
+17. 增加 seed 数量到 10+
+18. k_max=10 限制讨论
+19. §2.1/§2.3 冗余合并
+
+---
+
+## Key Files
+
+| File | Location | Status |
+|------|----------|--------|
+| HANDOVER.md | `10-papers/HANDOVER.md` | This file |
+| handover.md | `10-papers/handover.md` | Session log (sessions #1-#15) |
+| roadmap-paper10-final.md | `10-papers/roadmap-paper10-final.md` | Phase roadmap |
+| manuscript v2 | `10-papers/papers/paper-10-cbv-manuscript-v2.md` | 完整手稿 v2 (8253 词) |
+| manuscript v1 | `10-papers/papers/paper-10-cbv-manuscript.md` | 旧版手稿 (参考用) |
+| reviewer feedback | `10-papers/papers/reviewer-feedback-summary.md` | 3-Reviewers 汇总 |
+| CBV core | `10-papers/scripts/paper-10/cbv/index.py` | CBVIndex + sheather_jones_bandwidth |
+| CBVHybrid | `10-papers/scripts/paper-10/cbv/hybrid.py` | CBVHybrid |
+| CBVProjection | `10-papers/scripts/paper-10/cbv/projection.py` | CBVProjection (Phase D) |
+| Benchmark runner | `10-papers/scripts/paper-10/run_benchmark.py` | 全量基准脚本 |
+| Multi-seed results | `10-papers/scripts/paper-10/results/metrics_multi_seed.csv` | 5-seed 聚合指标 |
+| Per-seed accuracy | `10-papers/scripts/paper-10/results/accuracy_per_seed.csv` | 逐 seed 准确率 |
+| Ablation results | `10-papers/scripts/paper-10/results/ablation_correlated_dims.csv` | Phase D 消融 |
+| Projection results | `10-papers/scripts/paper-10/results/benchmark_projection_results.csv` | CBVProjection 基准 |
+| Figures | `10-papers/scripts/paper-10/figures/` | figure1-4 (.py + .png) |
+
+---
+
+## Commands for Next Agent
+
+```bash
+# 运行全量基准（如需重新生成）
+cd 10-papers/scripts/paper-10
+python run_benchmark.py
+
+# 运行投影基准
+python run_benchmark_projection.py
+
+# 运行消融实验
+python analysis/ablation_correlated_dims.py
+
+# 查看当前结果
+cat results/metrics_multi_seed.csv
+cat results/accuracy_per_seed.csv
 ```
 
 ---
 
-## Key Decisions (carry forward)
+## Important Notes
 
-1. **Narrative (Phase B update)**: CBV tied for #1 accuracy (60.6%) with lowest MAE (0.65) — complementary narrative updated to reflect top-tier performance
-2. **Mode parameter**: `'threshold'` (fast, no p-values, for benchmarks) vs `'bootstrap'` (full Silverman test, for publication)
-3. **n_init=10**: All KMeans-based CVIs use consistent initialization for fair comparison
-4. **Multi-seed protocol**: 5 seeds [42, 73, 123, 256, 999], report mean ± std
-5. **DUD Index excluded**: Not designed for k-estimation (monotonic scoring)
-6. **h_crit_tolerance=1.3** (from P1-1 calibration): default changed from 1.1; adaptive formula inverted to `1.0 + 0.5 * exp(-d/10)`
-7. **weight_method='excess_mass'** (from P1-2): replaces legacy bimodality_strength; weight proportional to # modes detected
-
----
-
-## Collaboration History (Compact)
-
-| Session | Date | What Was Done |
-|---------|------|---------------|
-| #1-#7 | 2026-05-19/20 | Pipeline setup, architecture, 5-step improvement, final benchmark 45.2% |
-| #8 | 2026-05-20 | Manuscript draft v1 (~8k words) + citation check + bilingual abstract |
-| #9 | 2026-05-21 | Peer review: 5-reviewer panel, Major Revision, 5 P0 items |
-| #10 | 2026-05-21 | **Phase A execution**: mode rename, n_init=10, multi-seed, MAE/±1/ARI |
-| #11 | 2026-05-21 | **Phase B execution**: tolerance sweep (opt=1.30), multimodal weight, sensitivity analysis. CBV 43.9%→60.6% |
-| #12 | 2026-05-22 | **Phase C execution**: 4 new indices (Hartigan, KL, Jump, McClain-Rao), +19 synth datasets, +8 OpenML real datasets, complementarity analysis module. Benchmark running on 58 datasets × 5 seeds. |
+1. **目标期刊已改为 TNNLS**（非 JMLR）。TNNLS 要求 IEEE 格式、编号章节、正式学术英语。
+2. **Phase E 数据是最终数据**。论文中所有数字必须使用 58 数据集 × 5 seeds 的结果，不要使用旧的 31 数据集结果。
+3. **CBV 核心结果**: 51.4% ± 0.8% accuracy (rank #2)，Gap Statistic 53.8% ± 1.4%。
+4. **互补性是论文最强的概念贡献**，但需要定量支撑（C1 修复）。
+5. **聚合理论是最关键的理论缺口**（C2 修复），TNNLS Reviewer 1 标记为 CRITICAL。
+6. **不要修改 cbv/ 目录下的代码**，除非 reviewer 要求新的实验。
+7. **参考文献有两个列表需要合并**（Part 1 references + Part 2 references），这是必须修复的编辑问题。
 
 ---
 
-*Next: Phase D — Advanced Features. Correlated-dimension ablation (P0-6), Sheather-Jones bandwidth (P1-3), random 2D projections CBV (P1-8). Then Phase E full benchmark run, then Phase F manuscript revision.*
+## Contact Points
+
+- **项目根目录**: `C:\Users\lenovos\academic-research-skills`
+- **论文目录**: `10-papers/`
+- **代码目录**: `10-papers/scripts/paper-10/`
+- **结果目录**: `10-papers/scripts/paper-10/results/`
