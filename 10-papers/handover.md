@@ -167,3 +167,46 @@ cat results/accuracy_per_seed.csv
 - **论文目录**: `10-papers/`
 - **代码目录**: `10-papers/scripts/paper-10/`
 - **结果目录**: `10-papers/scripts/paper-10/results/`
+
+---
+
+## Session #16 — Stage 1-4 Reviewer Fixes + Polishing (2026-06-22)
+
+### What Was Done
+- **Stage 1**: All 7 CRITICAL + 12 MAJOR + 9 MINOR reviewer fixes completed
+  - C1: Quantified complementarity (OR-ensemble 67.2%, Jaccard 0.412)
+  - C2: Aggregation theory (Proposition 1 + Corollary 1)
+  - C3-C7: Algorithm boundary conditions, h_crit logic, seed protocol, "first" claims, references merged
+  - M2-M12: τ justification, kernel sensitivity, pairwise tests, title, abstract, practitioner guide
+- **Stage 2**: Structural fixes (§1.3/§2.3 merge, literature gaps, Proposition 1 condition, moons contradiction, table numbering)
+- **Stage 3**: Consistency fixes (Proposition 1 Δ_j, table references, $k$ rendering bug)
+- **Stage 4**: Language quality (fundamentally 6→3, notably 3→0, capitalization, DUD cleanup)
+
+### Key Decisions
+- Proposition 1 uses per-dimension Δ_j (not global Δ_min) — matches proof
+- CBV is deterministic; 5 seeds control k-means for geometric CVIs only
+- Gaussian kernel strongly preferred (60% vs 20% Epanechnikov)
+- CBV≈Gap Statistic: p=0.808, statistically indistinguishable
+
+### What Remains
+- LaTeX conversion (Markdown → IEEEtran)
+- Section numbering (decimal → Roman)
+- Equation numbering
+- Author/affiliation info
+- Abstract trim to ≤200 words
+- Figure embedding in manuscript body
+- Cover letter + suggested reviewers
+
+### Files Created/Modified
+- `10-papers/papers/paper-10-cbv-manuscript-v2.md` — main manuscript (10853 words)
+- `10-papers/papers/appendix-content.md` — appendix source
+- `10-papers/HANDOVER_F9.md` — handover document
+- `10-papers/scripts/paper-10/analysis/complementarity_enhanced.py`
+- `10-papers/scripts/paper-10/analysis/tau_sensitivity.py`
+- `10-papers/scripts/paper-10/analysis/posthoc_pairwise.py`
+- `10-papers/scripts/paper-10/analysis/kernel_sensitivity.py`
+- `10-papers/scripts/paper-10/figures/cbv_vs_gap_scatter.png`
+- `10-papers/scripts/paper-10/figures/jaccard_complementarity.png`
+- `10-papers/scripts/paper-10/figures/complementarity_heatmap.png`
+- `10-papers/scripts/paper-10/results/complementarity_matrix.csv`
+- `10-papers/scripts/paper-10/results/posthoc_pairwise.csv`
