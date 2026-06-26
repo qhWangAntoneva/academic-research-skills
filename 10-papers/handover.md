@@ -210,3 +210,90 @@ cat results/accuracy_per_seed.csv
 - `10-papers/scripts/paper-10/figures/complementarity_heatmap.png`
 - `10-papers/scripts/paper-10/results/complementarity_matrix.csv`
 - `10-papers/scripts/paper-10/results/posthoc_pairwise.csv`
+
+---
+
+## Session #17 — LaTeX Conversion + Submission Preparation (2026-06-25)
+
+### What Was Done
+- **IEEEtran LaTeX manuscript** (`paper-10-cbv-ieee.tex`) — complete conversion from Markdown (860 lines):
+  - Roman section numbering (I, I-A, I-B, ...)
+  - All equations numbered with \label/\ref
+  - All 10 tables converted to LaTeX tabular + booktabs
+  - Algorithms 1-2 in algorithmicx environment
+  - Proposition 1 + Corollary 1 + Proof as theorem environments
+  - All 30 references in IEEEtran thebibliography format
+  - 7 figures embedded via \includegraphics
+- **Abstract trimmed** from ~230 to ~153 words (TNNLS ≤200 limit)
+- **Author info**: Qi-Hao Wang (Xidian University)
+- **Compilation verified**: clean compile, 10 pages, 919 KB PDF, zero overfull boxes
+- **Cover letter** (`cover-letter.md`) drafted for TNNLS
+- **Suggested reviewers** (`suggested-reviewers.md`): 6 reviewers across 3 expertise areas
+- **Supplementary materials** packaged: S1 (per-dataset CSV), S2 (complementarity matrix CSV), S3 (7 figures), S4 (post-hoc tests CSV)
+
+### Key Decisions
+- Author name: Qi-Hao Wang (hyphenated given name per IEEE convention)
+- Affiliation: Xidian University (placeholder — user to confirm/update)
+- Supplementary data files stored alongside manuscript for easy bundling
+- Silverman bandwidth, Gaussian kernel, τ=15 defaults maintained per manuscript
+
+### What Remains (User-Managed)
+- Review/confirm author affiliation and email address
+- Submit to TNNLS via the journal submission portal
+- Make code repository public (https://github.com/cbv-benchmark) upon acceptance
+
+### Files Created/Modified
+- `10-papers/papers/paper-10-cbv-ieee.tex` — IEEEtran LaTeX manuscript (860 lines)
+- `10-papers/papers/paper-10-cbv-ieee.pdf` — compiled PDF (10 pages, 919 KB)
+- `10-papers/papers/cover-letter.md` — submission cover letter
+- `10-papers/papers/suggested-reviewers.md` — 6 suggested reviewers
+- `10-papers/papers/supplementary-materials.md` — supplementary index
+- `10-papers/papers/supplementary_table_s1.csv` — per-dataset results
+- `10-papers/papers/supplementary_fig2.csv` — complementarity matrix
+- `10-papers/papers/supplementary_posthoc.csv` — post-hoc pairwise tests
+- `10-papers/papers/figures/` — 7 embedded figures (.png)
+
+---
+
+## Session #18 — Reviewer Response + Swarm Revision + Re-Review (2026-06-26)
+
+### What Was Done
+- **5-reviewer panel** executed via academic-paper-reviewer skill (7 agents): field_analyst → EIC (von Luxburg) + Methodology (Arbelaitz) + Domain (Chacón) + Perspective (Dudoit) + DA (Hennig) → editorial_synthesizer
+- **Decision**: Major Revision, Score: 4.5/10
+- **3 CRITICAL issues identified**: (1) no multiplicity correction, (2) mode-cluster equivalence asserted not proven, (3) 51.4% framing misleading
+- **4 consensus issues** (4/5 reviewers): Proposition 1 too narrow, complementarity needs stronger stats, "second place" vs own tests, variance misinterpretation
+- **6 parallel Sonnet subagents** executed targeted edits addressing all 3 CRITICAL + 4 consensus issues:
+  - Narrative reframe: "second place" → "statistically competitive"; complementarity lead
+  - Mode-cluster qualification: new §6.4 gap section, Proposition 1 labeled "illustrative special case"
+  - Variance interpretation corrected: CBV deterministic across k-means seeds
+  - References updated: Sugar & James (2003) corrected, Hall & York (2001), Charrad (2014), Cheng & Hall (1998), Fisher & Marron (2001), Ben-Hur (2002) added
+  - Practical recommendations rewritten with concrete decision rules
+  - New §6.3 "Relevance to Learning Systems" section for TNNLS scope
+  - Critical difference diagram mention, τ=15 heuristic acknowledgment
+- **Compiled**: 915 lines, 11 pages, 933 KB PDF, zero errors
+- **Second 7-agent re-review**: Score improved 4.5→5.5/10.
+  - EIC: Minor Revision (7/10) — "all three critical issues and all four consensus issues satisfactorily resolved"
+  - DA: 2 remaining CRITICALs — foundational contradiction + mode-cluster gap not operationalized
+
+### Key Decisions
+- Narrative shifted from "CBV ranks second" to "CBV is statistically competitive; its primary value is complementarity"
+- Proposition 1 downgraded from proof of correctness to "illustrative special case"
+- Variance claim disclosed as deterministic artifact, not method stability
+- New "Relevance to Learning Systems" section (§6.3) connects CBV to DEC/VaDE/autoencoder diagnostics
+
+### What Remains (DA CRITICAL — Must Fix)
+1. **Resolve foundational contradiction**: Paper cites Hennig (2015) that "true cluster count is not well-defined" but evaluates against ground-truth labels — never reconciles. Either reframe CBV as mode-count estimator or add mode-cluster divergence quantification.
+2. **Operationalize mode-cluster gap**: §6.4 acknowledges the gap but abstract, title, and Results all treat mode count as cluster count without qualification.
+3. Add model-based clustering (GMM-BIC/ICL) as benchmark competitor.
+4. Report OR-ensemble accuracy across all 5 seeds.
+5. Integrate Hall & York (2001) into §3.3 discussion (not just decorative).
+6. Add HDBSCAN to related work.
+7. Provide standalone reproducibility statement.
+
+### Files Created/Modified
+- `10-papers/papers/paper-10-cbv-ieee.tex` — revised manuscript (915 lines, 67 KB)
+- `10-papers/papers/paper-10-cbv-ieee.pdf` — compiled PDF (11 pages, 933 KB)
+- `10-papers/papers/review-report.md` — 5-reviewer panel report (Round 1)
+- `10-papers/papers/re-review-report.md` — 5-reviewer panel report (Round 2)
+- `10-papers/papers/README.md` — paper introduction README
+- `10-papers/handover.md` — updated session log
