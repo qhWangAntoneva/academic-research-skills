@@ -1,0 +1,11 @@
+dataset,n,d,k_true,k_threshold,k_bootstrap,threshold_correct,bootstrap_correct,agree
+blobs_k3_d2_std0.3,300,2,3,4,3,0,1,0
+blobs_k5_d2_std0.5,300,2,5,3,5,0,1,0
+blobs_k3_d2_std1.5,300,2,3,3,3,1,1,1
+moons_noise0.05,300,2,2,2,2,1,1,1
+blobs_k3_d5_std1.0,300,5,3,3,2,1,0,0
+blobs_k10_d2_std0.5,600,2,10,4,6,0,0,0
+smalln_k3_n50,50,2,3,3,3,1,1,1
+"digits_[0, 1]",360,64,2,3,4,0,0,0
+breast_cancer,569,30,2,2,2,1,1,1
+glass,213,9,6,3,2,0,0,0

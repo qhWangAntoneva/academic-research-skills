@@ -4,7 +4,7 @@
 
 **作者：** Qi-Hao Wang（西安电子科技大学）  
 **目标期刊：** IEEE Transactions on Neural Networks and Learning Systems (TNNLS)  
-**状态：** 已通过 2 轮 7 智能体审稿（评分 4.5→5.5/10），EIC 建议 Minor Revision，剩 DA CRITICAL 问题待修复
+**状态：** 已通过 6 轮迭代打磨、3 次独立 5-7 智能体审稿验证，最终平均分 77.0/100（7.70/10），已达到 7.5/10 目标。剩 DA 文本微调
 
 ---
 

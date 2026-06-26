@@ -1,14 +1,14 @@
 # Handover Document — Paper #10 (CBV) TNNLS Submission
 
-**Handover date:** 2026-06-26
-**From:** Session #18 agent (Swarm Revision + 2-Round Review)
-**To:** Next agent section (DA CRITICAL Resolution + Final Polish)
+**Handover date:** 2026-06-27
+**From:** Session #12-#19 agent (Multi-Round Polishing: 6 iterations, 3 validated review panels)
+**To:** Next agent section (Final DA Text Fixes + TNNLS Submission)
 
 ---
 
 ## Executive Summary
 
-论文已完成 2 轮 7 智能体审稿（评分从 4.5→5.5/10）。EIC 给出 Minor Revision（7/10）建议，但 Devil's Advocate 仍有 2 个 CRITICAL 问题待解决。修改方向从"排名第二"转为"统计等位 + 互补性"，已添加模态-聚类差距章节和 Relevance to Learning Systems 章节。编译干净，11 页，933KB PDF。
+论文已完成 6 轮迭代打磨，经过 3 次独立 5-7 智能体审稿验证，最终平均分 77.0/100 (7.70/10)。EIC (82) 和 Methodology (76) 推荐 Minor Revision。三个 DA 遗留问题均为文本修改，无需新实验。编译干净，14 页，967KB PDF。
 
 ---
 
@@ -44,31 +44,23 @@
 
 ## What Remains for Next Agent
 
-### Tier 1 — DA CRITICAL (Must Fix, Blocks Acceptance)
+### Priority 1 — DA Text Fixes (No Experiments Needed, ~30 min)
 
-1. **Resolve foundational contradiction.** Paper opens citing Hennig (2015) that "true cluster count is not well-defined" (§1), then evaluates against ground-truth labels as deterministically correct (§4-5). Never reconciles these two positions. **Fix options:** (a) reframe CBV as mode-count estimator with dedicated mode-count benchmark; or (b) add explicit reconciliation paragraph stating ground-truth k is a convenient proxy, report accuracy against both labels AND consensus-derived best k.
+1. **Fix consensus circularity.** The consensus-derived k (§4.3) uses all 10 indices including CBV — compute from 9 geometric CVIs only. Update reconciliation statistic.
+2. **Adjust "competitive"/"outperforms"/"lowest" language** throughout to reflect concept-alignment interpretation rather than absolute quality claims.
+3. **Clean "lowest variance" framing** — replace with direct determinism statement.
 
-2. **Operationalize mode-cluster gap into evaluation.** §6.4 acknowledges modes≠clusters but abstract, title, and Results treat them as equivalent. **Fix:** Either reframe title/abstract to "mode counting" scope, or add quantified mode-cluster divergence analysis showing what fraction of errors are attributable to this gap.
+### Priority 2 — EIC Minor (Recommended)
 
-### Tier 2 — Methodology + Domain HIGH (Should Fix)
+4. **CBVHybrid non-convex ablation**: Verify whether spectral embedding fixes the circles failure.
+5. **Computational cost**: Add wall-clock times for all 11 indices.
 
-3. **Heuristic threshold, not hypothesis test.** The CBV threshold is described as "statistically distinguishable" but uses no bootstrap p-value, no Type I error calibration. Need either (a) implement Silverman bootstrap, or (b) consistently label as heuristic with calibration statement.
+### Priority 3 — Pre-Submission
 
-4. **Hyperparameter calibration.** τ=15 and w_min=0.15 were set on evaluation data without hold-out. Add accuracy across τ ∈ {5,10,15,20,30} to show headline result is not driven by tuning.
-
-5. **Missing benchmark competitor.** Add GMM-BIC and GMM-ICL as baselines.
-
-6. **Ensemble literature.** Cite Strehl & Ghosh (2003), Fred & Jain (2005) in §5.5. Report best non-CBV pairwise OR-ensemble.
-
-7. **CI=1.000 null model.** Show expected CI under independence at observed marginal accuracy rates.
-
-### Tier 3 — EIC/Perspective Minor (Recommended)
-
-8. **OR-ensemble across all 5 seeds.** Report mean ± std, not just seed 42.
-9. **Hall & York integration.** Discuss in §3.3 whether calibration corrections affect CBV threshold.
-10. **HDBSCAN in related work.** Add as density-based competitor paradigm.
-11. **Reproducibility statement.** Show CBV implementable with scipy/numpy alone, or provide standalone supp material.
-12. **Critical difference diagram** (implement as actual figure or explicit table of average ranks + CD interval).
+6. **Final LaTeX compile** (×2 for cross-refs)
+7. **Author photo**: Replace IEEEbiographynophoto with actual photo
+8. **Bibtex check**: Verify all 30+ references
+9. **Commit + push** to GitHub
 
 ---
 
@@ -76,8 +68,8 @@
 
 | File | Location | Status |
 |------|----------|--------|
-| **Manuscript (LaTeX)** | `10-papers/papers/paper-10-cbv-ieee.tex` | 915 lines, revised 2x, compiles clean |
-| **Manuscript (PDF)** | `10-papers/papers/paper-10-cbv-ieee.pdf` | 11 pages, 933 KB |
+| **Manuscript (LaTeX)** | `10-papers/papers/paper-10-cbv-ieee.tex` | 974 lines, revised 6x, compiles clean |
+| **Manuscript (PDF)** | `10-papers/papers/paper-10-cbv-ieee.pdf` | 14 pages, 967 KB |
 | **Handover** | `10-papers/handover.md` | Sessions #1-#18 log |
 | **Round 1 review report** | `10-papers/papers/review-report.md` | 5-reviewer, 4.5/10 |
 | **Round 2 re-review report** | `10-papers/papers/re-review-report.md` | 5-reviewer, 5.5/10 |
@@ -95,8 +87,12 @@
 | **CBV core** | `10-papers/scripts/paper-10/cbv/index.py` | CBVIndex |
 | **CBVHybrid** | `10-papers/scripts/paper-10/cbv/hybrid.py` | CBVHybrid |
 | **Benchmark runner** | `10-papers/scripts/paper-10/run_benchmark.py` | Full benchmark |
-| **Analysis scripts** | `10-papers/scripts/paper-10/analysis/*.py` | 4 analysis scripts |
-| **Results** | `10-papers/scripts/paper-10/results/*.csv` | Multi-seed metrics, per-dataset, complementarity, post-hoc |
+| **Analysis scripts** | `10-papers/scripts/paper-10/analysis/*.py` | 4 analysis scripts + 5 new: GMM-BIC, bootstrap CI, bootstrap test |
+| **Results** | `10-papers/scripts/paper-10/results/*.csv` | Multi-seed metrics, per-dataset, complementarity, post-hoc, GMM-BIC, bootstrap |
+
+---
+
+## Session #19 — Final Polishing + Target Achievement (2026-06-27)
 
 ---
 
