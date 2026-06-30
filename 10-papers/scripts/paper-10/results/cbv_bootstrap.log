@@ -1,0 +1,21 @@
+22:17:09 ============================================================
+22:17:09 CBV Bootstrap Confidence Intervals
+22:17:09 ============================================================
+22:17:15 Total datasets: 58
+22:17:15 Subset size: 12 datasets for bootstrap analysis
+22:18:21   blobs_k3_d2_std0.3: k_true=3 k_hat=4 CI=[3,4] range=1
+22:19:19   blobs_k3_d2_std0.5: k_true=3 k_hat=4 CI=[3,4] range=1
+22:20:21   blobs_k5_d2_std2.0: k_true=5 k_hat=3 CI=[3,3] range=0
+22:23:07   classif_k2_info2_noise10: k_true=2 k_hat=2 CI=[2,2] range=0
+22:23:29   moons_noise0.1: k_true=2 k_hat=2 CI=[2,3] range=1
+22:31:01   blobs_k3_d30_std1.0: k_true=3 k_hat=3 CI=[3,3] range=0
+22:31:34   aniso_k3_d2_stretch5.0: k_true=3 k_hat=3 CI=[3,3] range=0
+22:32:08   imbal_k3_d2_ratio5.0: k_true=3 k_hat=3 CI=[3,4] range=1
+22:32:12   smalln_k3_n50: k_true=3 k_hat=3 CI=[2,3] range=1
+22:32:19   smalln_k3_n100: k_true=3 k_hat=3 CI=[3,3] range=0
+22:33:16   wine: k_true=3 k_hat=2 CI=[2,2] range=0
+22:34:04   seeds: k_true=3 k_hat=2 CI=[2,3] range=1
+22:34:04 
+Bootstrap stability (CI range <= 1): 100%
+22:34:04 Saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\cbv_bootstrap_ci.csv
+22:34:04 Done.

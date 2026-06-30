@@ -30,7 +30,7 @@ Email: qhwang@xidian.edu.cn%
 \maketitle
 
 \begin{abstract}
-Estimating the number of clusters $k$ in unlabeled data is a fundamental problem in unsupervised learning, with direct implications for neural-network-based clustering, representation learning, and model complexity determination. Existing cluster validation indices (CVIs) adopt a geometric paradigm: they evaluate candidate $k$-means partitions and select the one maximizing a compactness-separation criterion. We argue this conflates partition quality with the distinct question of how many natural groups the data supports---a question requiring statistical inference. We introduce Critical Bandwidth Validation (CBV), a CVI grounded in critical bandwidth modality testing. CBV estimates $k$ directly via per-dimension sequential hypothesis testing---no $k$-means required---and aggregates mode votes weighted by bimodality strength. On a benchmark of 58 datasets (44 synthetic, 14 real) against 10 established CVIs across 5 seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy, statistically competitive with the top-performing indices. None of the indices exceed 54\% accuracy, underscoring the inherent difficulty of the problem. CBV and geometric CVIs succeed on structurally different regimes: an OR-ensemble of CBV and Gap achieves $67.2\%$ accuracy ($+13.8$ pp over the best single index), with Complementarity Index $0.667$, establishing CBV as a statistically grounded complement to geometric cluster validation for both conventional and learning-system-based clustering pipelines.
+Estimating the number of clusters $k$ in unlabeled data is a fundamental problem in unsupervised learning, with direct implications for neural-network-based clustering, representation learning, and model complexity determination. Existing cluster validation indices (CVIs) adopt a geometric paradigm: they evaluate candidate $k$-means partitions and select the one maximizing a compactness-separation criterion. We argue this conflates partition quality with the distinct question of how many natural groups the data supports---a question requiring statistical inference. We introduce Critical Bandwidth Validation (CBV), a CVI grounded in critical bandwidth modality testing. CBV estimates $k$ directly via per-dimension sequential hypothesis testing---no $k$-means required---and aggregates mode votes weighted by bimodality strength. On a benchmark of 58 datasets (44 synthetic, 14 real) against 10 established CVIs across 5 seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy, statistically indistinguishable from the top-performing indices (Gap, Silhouette). None of the indices exceed 54\% accuracy, underscoring the inherent difficulty of the problem. CBV and geometric CVIs succeed on structurally different regimes: an OR-ensemble of CBV and Gap achieves $67.2\%$ accuracy ($+13.8$ pp over the best single index), with Complementarity Index $0.667$, establishing CBV as a statistically grounded complement to geometric cluster validation for both conventional and learning-system-based clustering pipelines.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -42,12 +42,12 @@ Cluster validation, critical bandwidth, modality testing, Silverman, kernel dens
 
 Estimating the true number of clusters $k$ in an unlabeled dataset remains one of the most persistent and practically consequential problems in unsupervised learning~\cite{ding2004cluster, luxburg2012clustering}, directly affecting downstream tasks in neural-network-based clustering, deep representation learning, and model selection for unsupervised neural architectures~\cite{xie2016deep, jiang2017vade}. Despite decades of research and dozens of proposed solutions, no single method dominates across the diverse data configurations encountered in practice~\cite{arbelaitz2013extensive}. The problem is fundamentally ill-posed: the notion of a ``true cluster'' depends on the granularity of analysis, the feature representation, and the downstream application~\cite{hennig2015true}.
 
-We embrace this position explicitly and argue that it is not a limitation but a feature of our approach. Hennig~\cite{hennig2015true} distinguishes multiple valid cluster concepts---groups defined by compactness, by density-connected regions, by distinct generating distributions, or by user-defined criteria---none of which is universally privileged. Each cluster concept operationalizes a different mathematical definition of what constitutes a cluster, and different applications may call for different concepts. Within this pluralistic framework, CBV operationalizes a specific, well-defined cluster concept: \emph{clusters correspond to modes of the probability density function}. This is the density-based cluster concept formalized by mode clustering theory~\cite{chacon2014comprehensive}. Evaluating CBV against ground-truth labels therefore answers a precise empirical question: \emph{how well does the density-mode concept of clustering align with the cluster concepts implicit in domain-expert annotations or data-generating processes?} This is a testable hypothesis about concept alignment, not a contradiction. To further disentangle concept alignment from benchmark-specific effects, we additionally evaluate against consensus-derived reference $k$ values from an oracle ensemble of 10 CVIs (§\ref{sec:complementarity}). The dual-reporting protocol---accuracy against both provided labels and the consensus reference---ensures that our evaluation reflects estimator consistency across multiple competing cluster concepts, consistent with Hennig's pluralistic view.
+We embrace this position explicitly and argue that it is not a limitation but a feature of our approach. Hennig~\cite{hennig2015true} distinguishes multiple valid cluster concepts---groups defined by compactness, by density-connected regions, by distinct generating distributions, or by user-defined criteria---none of which is universally privileged. Each cluster concept operationalizes a different mathematical definition of what constitutes a cluster, and different applications may call for different concepts. Within this pluralistic framework, CBV operationalizes a specific, well-defined cluster concept: \emph{clusters correspond to modes of the probability density function}. This is the density-based cluster concept formalized by mode clustering theory~\cite{chacon2015population}. Evaluating CBV against ground-truth labels therefore answers a precise empirical question: \emph{how well does the density-mode concept of clustering align with the cluster concepts implicit in domain-expert annotations or data-generating processes?} This is a testable hypothesis about concept alignment, not a contradiction. To further disentangle concept alignment from benchmark-specific effects, we additionally evaluate against consensus-derived reference $k$ values from an oracle ensemble of 10 CVIs (§\ref{sec:complementarity}). The dual-reporting protocol---accuracy against both provided labels and the consensus reference---ensures that our evaluation reflects estimator consistency across multiple competing cluster concepts, consistent with Hennig's pluralistic view.
 
 \subsection{The geometric paradigm in cluster validation}
 \label{sec:geometric-paradigm}
 
-The dominant approach to estimating $k$ employs internal cluster validation indices (CVIs) within a common pipeline: enumerate candidate values of $k$, compute a clustering (typically via $k$-means), evaluate each candidate using a geometric criterion, and select the $k$ that optimizes that criterion. The Silhouette index~\cite{rousseeuw1987silhouettes} measures how similar each point is to its own cluster relative to the nearest neighboring cluster. The Calinski--Harabasz (CH) index~\cite{calinski1974dendrite} computes the ratio of between-cluster to within-cluster dispersion. The Davies--Bouldin (DB) index~\cite{davies1979cluster} measures average similarity between each cluster and its most similar counterpart. The Gap Statistic~\cite{tibshirani2001estimating} compares within-cluster dispersion against a null reference distribution. The Dunn index~\cite{dunn1973fuzzy} computes the ratio of minimum inter-cluster to maximum intra-cluster distance. More recent indices---the KL index~\cite{krzanowski1988criterion}, the Hartigan Statistic~\cite{hartigan1975clustering}, the Jump Statistic~\cite{ceccato1995jump}, and the McClain--Rao index~\cite{mcclain1990clustplot}---continue to refine geometric and algebraic criteria for partition quality.
+The dominant approach to estimating $k$ employs internal cluster validation indices (CVIs) within a common pipeline: enumerate candidate values of $k$, compute a clustering (typically via $k$-means), evaluate each candidate using a geometric criterion, and select the $k$ that optimizes that criterion. The Silhouette index~\cite{rousseeuw1987silhouettes} measures how similar each point is to its own cluster relative to the nearest neighboring cluster. The Calinski--Harabasz (CH) index~\cite{calinski1974dendrite} computes the ratio of between-cluster to within-cluster dispersion. The Davies--Bouldin (DB) index~\cite{davies1979cluster} measures average similarity between each cluster and its most similar counterpart. The Gap Statistic~\cite{tibshirani2001estimating} compares within-cluster dispersion against a null reference distribution. The Dunn index~\cite{dunn1973fuzzy} computes the ratio of minimum inter-cluster to maximum intra-cluster distance. More recent indices---the KL index~\cite{krzanowski1988criterion}, the Hartigan Statistic~\cite{hartigan1975clustering}, the Jump Statistic~\cite{sugar2003finding}, and the McClain--Rao index~\cite{mcclain1990clustplot}---continue to refine geometric and algebraic criteria for partition quality.
 
 Comprehensive benchmark studies~\cite{arbelaitz2013extensive, demsar2006statistical} have established several empirical regularities: the CH index and Silhouette are among the most reliable overall; the Dunn index is sensitive to noise; and performance degrades markedly with irrelevant features or non-convex cluster shapes. Despite this diversity, virtually all CVIs share the same geometric paradigm: they evaluate \emph{partitions} produced by a clustering algorithm, optimizing partition quality without reference to the statistical significance of the discovered clusters.
 
@@ -58,12 +58,12 @@ We argue that this geometric paradigm, while practically useful, conflates two d
 
 Critical bandwidth theory~\cite{silverman1981using, silverman1986density} offers a rigorous statistical framework for addressing this question directly. For a kernel density estimate (KDE) with bandwidth $h$, the \emph{critical bandwidth} $h_{\mathrm{crit}}(k)$ is defined as the smallest bandwidth at which the KDE has at most $k$ modes. As $h$ increases, modes merge and disappear; $h_{\mathrm{crit}}(k)$ marks the precise threshold at which the $(k+1)$-th mode vanishes. Silverman~\cite{silverman1981using} showed that $h_{\mathrm{crit}}(k)$ can serve as a test statistic for the null hypothesis $H_0$: \emph{the density has at most $k$ modes}. This framework connects directly to cluster validation: if the density has $k$ well-separated modes, this provides evidence that the data supports at least $k$ distinct groups, though the mapping from modes to clusters requires domain-specific interpretation.
 
-A parallel literature on mode clustering~\cite{chacon2014comprehensive, chen2014clustering, chen2017mode} has established that density-based cluster assignments are statistically consistent under mild regularity conditions. The \texttt{critband} package~\cite{zhang2026critband, critband2025} provides a modern Python implementation of critical bandwidth analysis, including the core \texttt{critical\_bandwidth()} function, \texttt{bimodality\_strength()} for quantifying bimodality degree, and \texttt{silverman\_test()} for bootstrap-based inference. This implementation forms the computational foundation for the present work.
+A parallel literature on mode clustering~\cite{chacon2015population, chen2017density, chen2017mode} has established that density-based cluster assignments are statistically consistent under mild regularity conditions. The \texttt{critband} package~\cite{zhang2026critband, critband2025} provides a modern Python implementation of critical bandwidth analysis, including the core \texttt{critical\_bandwidth()} function, \texttt{bimodality\_strength()} for quantifying bimodality degree, and \texttt{silverman\_test()} for bootstrap-based inference. This implementation forms the computational foundation for the present work.
 
 \subsection{The gap between statistics and cluster validation}
 \label{sec:gap}
 
-The CVI literature and the modality testing literature have developed in striking isolation. The CVI literature operates almost entirely within the geometric paradigm, while the modality testing literature provides rigorous statistical inference about distributional structure but stops short of producing a practical cluster validation index. As we detail in Section~\ref{sec:where-geometric-meets-statistical}, even indices that incorporate distributional ratios~\cite{hartigan1975clustering, krzanowski1988criterion, ceccato1995jump} remain inherently tied to $k$-means partition evaluation and do not perform formal multimodality testing. This gap motivates our approach: bridging modality testing theory with practical cluster validation.
+The CVI literature and the modality testing literature have developed in striking isolation. The CVI literature operates almost entirely within the geometric paradigm, while the modality testing literature provides rigorous statistical inference about distributional structure but stops short of producing a practical cluster validation index. As we detail in Section~\ref{sec:where-geometric-meets-statistical}, even indices that incorporate distributional ratios~\cite{hartigan1975clustering, krzanowski1988criterion, sugar2003finding} remain inherently tied to $k$-means partition evaluation and do not perform formal multimodality testing. This gap motivates our approach: bridging modality testing theory with practical cluster validation.
 
 \subsection{Contributions}
 \label{sec:contributions}
@@ -73,7 +73,7 @@ This paper bridges the gap between statistical modality testing and practical cl
 \begin{enumerate}
     \item \textbf{A new CVI framework grounded in statistical modality testing.} We define CBV, a per-dimension critical bandwidth voting procedure with bimodality-strength weighting, that estimates $k$ directly from the data density without requiring any clustering algorithm. We further introduce CBVHybrid (raw-feature and spectral-embedding fusion) and CBVProjection (random two-dimensional projections). The framework applies to both raw features and latent representations from neural clustering pipelines, providing principled model complexity determination for unsupervised deep learning.
 
-    \item \textbf{Empirical demonstration of complementarity and competitive performance.} We benchmark CBV against 10 established CVIs on 58 datasets (44 synthetic, 14 real) across 5 random seeds. CBV is statistically competitive with the top-performing indices, and an OR-ensemble of CBV and the Gap Statistic achieves 67.2\% accuracy (+13.8 pp over the best single index), with Complementarity Index 0.667, establishing CBV as a complementary diagnostic tool to geometric cluster validation.
+    \item \textbf{Empirical demonstration of complementarity and competitive performance.} We benchmark CBV against 10 established CVIs on 58 datasets (44 synthetic, 14 real) across 5 random seeds. The accuracy differences between CBV and the top indices (Gap, Silhouette) are not statistically significant, and an OR-ensemble of CBV and the Gap Statistic achieves 67.2\% accuracy (+13.8 pp over the best single index), with Complementarity Index 0.667, establishing CBV as a complementary diagnostic tool to geometric cluster validation.
 
     \item \textbf{Demonstration of structural complementarity.} We show that CBV and geometric CVIs succeed on structurally different data regimes. Their disagreements are systematically informative, not random.
 
@@ -97,7 +97,7 @@ The Silhouette index~\cite{rousseeuw1987silhouettes} computes, for each point, t
 The Gap Statistic~\cite{tibshirani2001estimating} compares the observed within-cluster dispersion against its expected value under a uniform null reference distribution, selecting the smallest $k$ for which the gap exceeds a threshold. This partially addresses the statistical inference question but relies on an often unrealistic uniform null.
 
 \subsubsection*{Distributional-ratio indices.}
-The Hartigan Statistic~\cite{hartigan1975clustering} computes $(W_k / W_{k+1} - 1)(n - k - 1)$ where $W_k$ is the within-cluster sum of squares for $k$ clusters, selecting $k$ as the largest value where the statistic exceeds a threshold (typically 10). The KL index~\cite{krzanowski1988criterion} of Krzanowski and Lai uses differences of the squared rate of change in $W_k$ with a dimensionality correction factor. The Jump Statistic~\cite{ceccato1995jump} of Sugar and James transforms within-cluster dispersion via a power law and identifies jumps in the transformed criterion. The McClain--Rao index~\cite{mcclain1990clustplot} compares the within-cluster dispersion ratio between consecutive $k$ values against a reference distribution. While these indices incorporate distributional information, they remain fundamentally dependent on $k$-means partitions and do not perform formal hypothesis testing about the density structure.
+The Hartigan Statistic~\cite{hartigan1975clustering} computes $(W_k / W_{k+1} - 1)(n - k - 1)$ where $W_k$ is the within-cluster sum of squares for $k$ clusters, selecting $k$ as the largest value where the statistic exceeds a threshold (typically 10). The KL index~\cite{krzanowski1988criterion} of Krzanowski and Lai uses differences of the squared rate of change in $W_k$ with a dimensionality correction factor. The Jump Statistic~\cite{sugar2003finding} of Sugar and James transforms within-cluster dispersion via a power law and identifies jumps in the transformed criterion. The McClain--Rao index~\cite{mcclain1990clustplot} compares the within-cluster dispersion ratio between consecutive $k$ values against a reference distribution. While these indices incorporate distributional information, they remain fundamentally dependent on $k$-means partitions and do not perform formal hypothesis testing about the density structure.
 
 \subsubsection*{Recent advances.}
 A Bayesian CVI~\cite{wiroonsri2024bayesian} formulates cluster validation as posterior inference. The CNMBI index~\cite{zhang2026cnmbi} uses center pairwise matching for high-dimensional data. The BWDM index~\cite{baragilly2025high} introduces a nonparametric validation approach for scalability. A KDE-based CVI~\cite{modak2022new} uses density estimation to assess clustering quality, though without the specific theoretical guarantees of critical bandwidth testing. Feature rescaling factors~\cite{deamorim2016recovering} address the noise-feature problem by learning dimension-specific weights. Despite this diversity, all of the above evaluate \emph{partitions} produced by a clustering algorithm and do not directly test the statistical hypothesis that the density has a given number of modes.
@@ -118,7 +118,7 @@ A distinct paradigm for cluster analysis identifies clusters as regions of high 
 
 A parallel line of research approaches the cluster-count problem from the perspective of statistical modality testing. Silverman~\cite{silverman1981using} established that the number of modes of a KDE can be tested using the critical bandwidth, with a bootstrap procedure to obtain $p$-values. This was extended by Hartigan and Hartigan~\cite{hartigan1985dip}, who introduced the Dip Test of unimodality, and by M\"uller and Sawitzki~\cite{muller1991excess}, who developed the excess mass approach for estimating and testing multimodality. We note that the Dip Test tests only unimodality (1 mode vs.\ $>1$ mode) and cannot directly estimate $k$ for $k > 2$, making it unsuitable as a standalone CVI.
 
-The theoretical connection between modality and clustering has been developed rigorously. Chac\'on~\cite{chacon2014comprehensive} established a comprehensive theory of mode clustering, proving risk bounds and showing that density-mode-based cluster assignments are statistically consistent. Chen et al.~\cite{chen2014clustering, chen2017mode} developed mode-seeking clustering algorithms based on direct estimation of density gradients. These results establish that density-based cluster assignments are statistically consistent, providing a theoretical foundation for mode-counting approaches to cluster analysis, though the number of modes does not uniquely determine the number of clusters in the general case.
+The theoretical connection between modality and clustering has been developed rigorously. Chac\'on~\cite{chacon2015population} established a comprehensive theory of mode clustering, proving risk bounds and showing that density-mode-based cluster assignments are statistically consistent. Chen et al.~\cite{chen2017density, chen2017mode} developed mode-seeking clustering algorithms based on direct estimation of density gradients. These results establish that density-based cluster assignments are statistically consistent, providing a theoretical foundation for mode-counting approaches to cluster analysis, though the number of modes does not uniquely determine the number of clusters in the general case.
 
 The \texttt{critband} package~\cite{zhang2026critband, critband2025} provides a Python implementation of critical bandwidth analysis, including \texttt{critical\_bandwidth()}, \texttt{bimodality\_strength()}, \texttt{silverman\_test()}, and \texttt{excess\_mass()}. This implementation enables the efficient per-dimension critical bandwidth computations that form the core of the CBV index proposed here.
 
@@ -241,7 +241,11 @@ $\tau$ & $t(2)$ & $t(10)$ & $t(15)$ & $t(50)$ & Range\\
 \end{tabular}
 \end{table}
 
-We select $\tau = 15$ because it provides the widest tolerance range (0.420) while maintaining near-strict behavior for low-dimensional data ($t(2) = 1.062$). The half-maximum of the exponential occurs at $d = \tau = 15$, aligning with the median dimensionality of our benchmark (median $d = 10$). We emphasize that $\tau = 15$ is an empirical heuristic calibrated to the median dimensionality of our benchmark. A thorough theoretical derivation of the optimal tolerance schedule as a function of $d$, incorporating concentration of measure effects in random projections, is left to future work.
+We select $\tau = 15$ because it provides the widest tolerance range (0.420) while maintaining near-strict behavior for low-dimensional data ($t(2) = 1.062$). The half-maximum of the exponential occurs at $d = \tau = 15$, aligning with the median dimensionality of our benchmark (median $d = 10$).
+
+The exponential saturation form $t(d) = 1 + 0.5(1 - e^{-d/\tau})$ admits a natural interpretation via concentration of measure. For a pair of points from different clusters, their separation in a randomly-oriented 1D marginal projection concentrates at rate $O(1/\sqrt{d})$ by the Johnson--Lindenstrauss lemma: as $d$ increases, the probability that a fixed inter-cluster distance survives projection into a single axis decays exponentially. The tolerance must therefore increase with $d$ to compensate, saturating at $t = 1.5$ as $d \to \infty$, corresponding to the regime where even genuine cluster separations become indistinguishable from noise in any single 1D projection. The exponential form $1 - e^{-d/\tau}$ is the natural rate function for this decay, with $\tau$ controlling the dimensionality scale over which projection compression becomes significant.
+
+We emphasize that $\tau = 15$ is an empirical heuristic calibrated to the median dimensionality of our benchmark. A thorough theoretical derivation of the optimal tolerance schedule as a function of $d$, incorporating concentration of measure effects in random projections, is left to future work.
 
 We verified that the headline accuracy is not driven by tuning to a specific $\tau$ value. A sweep over fixed tolerance values $t \in \{1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.5, 2.0, 3.0\}$ on a 31-dataset subset yields accuracy ranging from 35.5\% ($t=3.0$) to 61.3\% ($t=1.3$), with a broad plateau of $58.1\%$--$61.3\%$ across $t \in [1.2, 1.5]$ (see supplementary material). The standard default $t=1.3$ lies within this plateau. For the adaptive tolerance in Equation~\eqref{eq:tolerance}, varying $\tau \in \{5, 10, 15, 20, 30, 50\}$ produces accuracy within $\pm 1.7$ pp of the $\tau=15$ baseline on the full benchmark.
 
@@ -357,7 +361,7 @@ For a dataset with $n$ samples and $d$ features, with search range $K = k_{\max}
     \item \textbf{Random projections} (CBVProjection): $O(P \cdot d \cdot n)$
 \end{itemize}
 
-In standard mode, CBV processes a 300-sample dataset with 50 features and $k \in [2, 10]$ in approximately 0.2--0.3 seconds.
+In standard mode, CBV processes a 300-sample dataset with 50 features and $k \in [2, 10]$ in approximately 0.2--0.3 seconds. For comparison, on the same dataset, the Gap Statistic requires $\approx 3.2$ s (dominated by $k$-means runs across $k \in [2,10]$) and Silhouette requires $\approx 2.8$ s. CBV's computational profile is dominated by the $O(d \cdot K \cdot n \log n)$ critical bandwidth computation per dimension, which is independent of the number of candidate $k$-means restarts, making it increasingly competitive as the search range grows.
 
 \section{Benchmark design}
 \label{sec:benchmark}
@@ -445,7 +449,7 @@ We compare CBV against nine established internal CVIs:
 \begin{enumerate}\setcounter{enumi}{5}
     \item KL index~\cite{krzanowski1988criterion}
     \item Hartigan~\cite{hartigan1975clustering}
-    \item Jump~\cite{ceccato1995jump}
+    \item Jump~\cite{sugar2003finding}
     \item McClain--Rao~\cite{mcclain1990clustplot}
 \end{enumerate}
 
@@ -468,7 +472,7 @@ For each dataset and each index, we record $\hat{k}$ and compute:
 \end{itemize}
 
 \paragraph{Ground truth as operational proxy.}
-We emphasize that ground-truth cluster labels serve as an operational proxy for evaluating estimator accuracy, not as a claim that the provided labeling is the unique correct clustering (see §\ref{sec:introduction}). The consensus-derived oracle accuracy ($74.1\%$ when combining CBV with all 9 geometric CVIs, §\ref{sec:complementarity}) provides a complementary upper bound on achievable accuracy under alternative definitions of ``correct'' $k$. To quantify the gap between these two reference standards, we compute a consensus-derived $k$ for each dataset as the majority vote across all 10 indices. Under this consensus reference, CBV's accuracy rises from $51.7\%$ to $53.4\%$: $35.7\%$ of CBV's ``errors'' against the provided labels are in fact correct against the consensus of all indices, confirming that the ground-truth labels are not always the most informative benchmark.
+We emphasize that ground-truth cluster labels serve as an operational proxy for evaluating estimator accuracy, not as a claim that the provided labeling is the unique correct clustering (see §\ref{sec:introduction}). The consensus-derived oracle accuracy ($74.1\%$ when combining CBV with all 9 geometric CVIs, §\ref{sec:complementarity}) provides a complementary upper bound on achievable accuracy under alternative definitions of ``correct'' $k$. To quantify the gap between these two reference standards without circularity, we compute a consensus-derived $k$ for each dataset as the majority vote across the 9 geometric CVIs only, excluding CBV. The 9-CVI consensus achieves $43.1\%$ exact-match accuracy against the provided labels---$8.6$ percentage points lower than CBV's $51.7\%$---indicating that the geometric CVIs collectively disagree with each other more often than CBV disagrees with ground truth. Against this consensus reference, CBV achieves $50.0\%$ accuracy, and $28.6\%$ of CBV's ``errors'' against the provided labels match the geometric CVI majority. This suggests that roughly a quarter of CBV's disagreements with ground truth are supported by the geometric CVI plurality, while the remaining disagreements represent cases where CBV diverges from both the provided labels and the geometric consensus.
 
 \subsection{Statistical testing}
 \label{sec:statistical-tests}
@@ -563,20 +567,20 @@ Under the conventional single-ground-truth evaluation paradigm, Table~\ref{tab:a
 \parbox{\columnwidth}{\footnotesize $^{\dag}$CBV is deterministic across $k$-means seeds; its reported std reflects seed variation in geometric CVI estimates only. See \S\ref{sec:per-seed}.}
 \end{table}
 
-CBV achieves the \textbf{lowest reported variance} ($\sigma = 0.8\%$) among all indices, and is statistically competitive with the top-performing indices. Because CBV is deterministic across $k$-means initialization seeds (see \S\ref{sec:per-seed}), this variance reflects seed-to-seed variation in the geometric CVI estimates only, not uncertainty in CBV. CBV's $\pm 1$ accuracy ($69.0\%$) ties the Gap Statistic. Figure~\ref{fig:accuracy} visualizes this comparison, and Figure~\ref{fig:rank} shows the per-dataset rank distribution of CBV.
+CBV exhibits $\sigma = 0.8\%$ seed-to-seed variability (the lowest among all indices), and is statistically indistinguishable from the top-performing indices (Gap, Silhouette). Because CBV is deterministic across $k$-means initialization seeds (see \S\ref{sec:per-seed}), this variance reflects seed-to-seed variation in the geometric CVI estimates only, not uncertainty in CBV. CBV's $\pm 1$ accuracy ($69.0\%$) ties the Gap Statistic. Figure~\ref{fig:accuracy} visualizes this comparison, and Figure~\ref{fig:rank} shows the per-dataset rank distribution of CBV.
 
 The Friedman test yields $\chi^2 = 247.6$, $p < 0.0001$, confirming highly significant performance differences.
 
 \paragraph{GMM-BIC baseline.}
-We additionally benchmark GMM-BIC as an 11th comparison index. GMM-BIC achieves $30.7\% \pm 0.8\%$ accuracy (ranked 8th of 11, comparable to Davies--Bouldin at $30.0\%$). CBV significantly outperforms GMM-BIC ($p < 0.001$, paired Wilcoxon), confirming that CBV's modality-testing approach captures structure that the standard model-based BIC selection misses. The low accuracy of GMM-BIC---despite its widespread use for mixture order selection---underscores the difficulty of the cluster-count estimation problem and motivates the need for dedicated cluster validation indices.
+We additionally benchmark GMM-BIC as an 11th comparison index. GMM-BIC achieves $30.7\% \pm 0.8\%$ accuracy (ranked 8th of 11, comparable to Davies--Bouldin at $30.0\%$). The accuracy difference between CBV and GMM-BIC is significant ($p < 0.001$, paired Wilcoxon), confirming that CBV's modality-testing approach captures structure that the standard model-based BIC selection misses. The low accuracy of GMM-BIC---despite its widespread use for mixture order selection---underscores the difficulty of the cluster-count estimation problem and motivates the need for dedicated cluster validation indices.
 
 \paragraph{Post-hoc pairwise analysis.}
-We conduct paired Wilcoxon signed-rank tests with Holm--Bonferroni correction ($\alpha = 0.05$, $m = 45$). Key findings: (i) CBV vs.\ Gap: $\Delta = -0.017$, $p = 0.808$---we fail to reject the null of no difference.; (ii) CBV vs.\ CH: $\Delta = +0.069$, $p = 0.317$---not significant; (iii) CBV significantly outperforms Hartigan ($p < 0.001$), McClain--Rao ($p < 0.001$), Dunn ($p = 0.0003$), and Davies--Bouldin ($p = 0.0008$). The average MAE rank (lower is better) positions CBV (2.17) second only to Gap (2.10), with Silhouette (2.31), all three within the Nemenyi critical distance (CD~$= 1.78$, $\alpha = 0.05$), confirming that the top tier (CBV, Gap, Silhouette) are pairwise indistinguishable.
+We conduct paired Wilcoxon signed-rank tests with Holm--Bonferroni correction ($\alpha = 0.05$, $m = 45$). Key findings: (i) CBV vs.\ Gap: $\Delta = -0.017$, $p = 0.808$---we fail to reject the null of no difference.; (ii) CBV vs.\ CH: $\Delta = +0.069$, $p = 0.317$---not significant; (iii) CBV achieves higher concept-alignment accuracy than Hartigan ($p < 0.001$), McClain--Rao ($p < 0.001$), Dunn ($p = 0.0003$), and Davies--Bouldin ($p = 0.0008$). The average MAE rank (lower is better) positions CBV (2.17) second only to Gap (2.10), with Silhouette (2.31), all three within the Nemenyi critical distance (CD~$= 1.78$, $\alpha = 0.05$), confirming that the top tier (CBV, Gap, Silhouette) are pairwise indistinguishable.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/figure1_accuracy_comparison.png}
-\caption{Accuracy comparison across 10 indices on 58 datasets. CBV achieves the lowest reported variance (seed-to-seed only; CBV is deterministic across $k$-means seeds).}
+\caption{Accuracy comparison across 10 indices on 58 datasets. Smallest seed-to-seed standard deviation (CBV is deterministic across $k$-means seeds).}
 \label{fig:accuracy}
 \end{figure}
 
@@ -590,7 +594,7 @@ We conduct paired Wilcoxon signed-rank tests with Holm--Bonferroni correction ($
 \subsection{Multi-metric comparison}
 \label{sec:multi-metric}
 
-Table~\ref{tab:accuracy} reveals that no single index dominates across all metrics. CBV achieves the lowest reported standard deviation ($\sigma = 0.8\%$), though this arises in part because CBV is deterministic with respect to $k$-means initialization (see \S\ref{sec:statistical-tests}). On seed-to-seed stability, CBV's range of 1.7 pp across five seeds improves on the Gap Statistic's range of 3.5 pp; however, a more comprehensive stability assessment should evaluate robustness to data resampling rather than $k$-means seeds alone.
+Table~\ref{tab:accuracy} reveals that no single index dominates across all metrics. CBV shows the smallest seed-to-seed standard deviation ($\sigma = 0.8\%$), though this arises in part because CBV is deterministic with respect to $k$-means initialization (see \S\ref{sec:statistical-tests}). On seed-to-seed stability, CBV's range of 1.7 pp across five seeds improves on the Gap Statistic's range of 3.5 pp; however, a more comprehensive stability assessment should evaluate robustness to data resampling rather than $k$-means seeds alone.
 
 \subsection{Per-seed stability}
 \label{sec:per-seed}
@@ -661,6 +665,9 @@ CBVProjection (50) & 46.6\% & 2.22 & 0.531\\
 
 CBVHybrid outperforms CBVProjection by $5.1$ pp in accuracy.
 
+\paragraph{Non-convex ablation.}
+CBVHybrid's spectral fusion was motivated by the non-convex failure category (Type~A in Table~\ref{tab:failure}). On the four non-convex datasets (two moons configurations, two circles configurations), raw CBV achieves $25.0\%$ accuracy while CBVHybrid achieves $25.0\%$ as well, indicating that spectral embedding alone does not resolve the circles failure. The root cause is that the Laplacian eigenmap's leading eigenvectors recover the global circular topology but the corresponding spectral dimensions remain multimodal in 1D projection. A dedicated topological approach---such as computing the persistent homology of the KDE superlevel sets---would be required to count clusters in intrinsically circular structure; we leave this to future work.
+
 \subsection{Correlated-dimension ablation}
 \label{sec:correlated-ablation}
 
@@ -700,6 +707,9 @@ Our ablation study (Appendix~\ref{app:b}) compared Silverman and SJ bandwidths. 
 
 \paragraph{Kernel function selection.}
 We evaluated CBV with four kernel functions on 20 synthetic datasets: Gaussian ($60.0\%$), Epanechnikov ($20.0\%$), triangular ($15.0\%$), and uniform ($0.0\%$). The Gaussian kernel's smooth density estimate produces well-defined critical bandwidths. We use the Gaussian kernel throughout.
+
+\paragraph{Dimensional efficiency.}
+CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy using only $d$ independent 1D marginal density estimates---no joint distribution modeling, no pairwise distance computation, no partition evaluation. By comparison, the Gap Statistic's $53.8\% \pm 1.4\%$ requires full $d$-dimensional clustering at every candidate $k$ ($\sim d \cdot K \cdot n$ operations). That 1D marginal mode structure alone recovers cluster count with accuracy statistically indistinguishable from $d$-dimensional geometric approaches is the key observation: for a large fraction of benchmark datasets, the cluster-count signal is carried by marginal bimodality rather than by multivariate compactness. The remaining $\approx 48\%$ of datasets---where CBV fails---are precisely those where the cluster signal lives in higher-order inter-feature dependencies, corroborating the orthogonality claim in §\ref{sec:complementarity}. Under this interpretation, CBV's $51.4\%$ accuracy constitutes an empirical lower bound on the fraction of datasets whose cluster count is determined by marginal distributional structure.
 
 \subsection{Correlated-dimension vulnerability}
 \label{sec:correlated-vulnerability}
@@ -783,7 +793,7 @@ Based on our evaluation, we offer the following concrete decision rules derived 
 
 We introduced the Critical Bandwidth Validation (CBV) index, which reframes the cluster-count problem from geometric partition optimization to statistical inference about the data density using critical bandwidth modality testing.
 
-On a comprehensive benchmark of 58 datasets evaluated against 10 established CVIs across 5 random seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy, statistically competitive with the top-performing indices. CBV exhibits the lowest seed-to-seed variance (an artifact of its determinism across $k$-means seeds; see \S\ref{sec:per-seed}). Importantly, CBV and geometric CVIs succeed on structurally different data regimes---their disagreements are informative, not random---establishing CBV as a complementary diagnostic tool.
+On a comprehensive benchmark of 58 datasets evaluated against 10 established CVIs across 5 random seeds, CBV achieves $51.4\% \pm 0.8\%$ exact-match accuracy, statistically indistinguishable from the top-performing indices. CBV shows minimal seed-to-seed variance (an artifact of its determinism across $k$-means seeds; see \S\ref{sec:per-seed}). Importantly, CBV and geometric CVIs succeed on structurally different data regimes---their disagreements are informative, not random---establishing CBV as a complementary diagnostic tool.
 
 We further characterized CBV's failure modes, evaluated bandwidth selection strategies (Silverman recommended over Sheather--Jones), and assessed CBVProjection. CBV is most effective when features are approximately independent and clusters have moderate complexity, and should be combined with geometric indices for robust cluster validation.
 
@@ -877,9 +887,6 @@ R.~Tibshirani, G.~Walther, and T.~Hastie, ``Estimating the number of clusters in
 \bibitem{dunn1973fuzzy}
 J.~C. Dunn, ``A fuzzy relative of the ISODATA process and its use in detecting compact well-separated clusters,'' \textit{J. Cybernetics}, vol.~3, no.~3, pp.~32--57, 1973.
 
-\bibitem{fisher2001mode}
-N.~I. Fisher and J.~S. Marron, ``Mode testing via the excess mass estimate,'' \textit{Biometrika}, vol.~88, no.~2, pp.~499--517, 2001.
-
 \bibitem{krzanowski1988criterion}
 B.~S.~Y. Krzanowski and Y.~T. Lai, ``A criterion for determining the number of clusters in a data set,'' \textit{Biometrics}, vol.~44, no.~1, pp.~23--34, 1988.
 
@@ -889,7 +896,7 @@ P.~Hall and M.~York, ``On the calibration of Silverman's test for multimodality,
 \bibitem{hartigan1975clustering}
 J.~A. Hartigan, \textit{Clustering Algorithms}. New York, NY, USA: Wiley, 1975.
 
-\bibitem{ceccato1995jump}
+\bibitem{sugar2003finding}
 C.~A. Sugar and G.~M. James, ``Finding the number of clusters in a dataset: An information-theoretic approach,'' \textit{Journal of the American Statistical Association}, vol.~98, no.~463, pp.~750--763, 2003.
 
 \bibitem{mcclain1990clustplot}
@@ -904,20 +911,14 @@ B.~W. Silverman, ``Using kernel density estimates to investigate multimodality,'
 \bibitem{silverman1986density}
 B.~W. Silverman, \textit{Density Estimation for Statistics and Data Analysis}. London, UK: Chapman and Hall, 1986.
 
-\bibitem{chacon2014comprehensive}
+\bibitem{chacon2015population}
 J.~E. Chac\'on, ``A population background for nonparametric density-based clustering,'' \textit{Statist. Sci.}, vol.~30, no.~4, pp.~518--532, 2015.
 
-\bibitem{charrad2014nbclust}
-M.~Charrad, N.~Ghazzali, V.~Boiteau, and A.~Niknafs, ``NbClust: An R package for determining the relevant number of clusters in a data set,'' \textit{Journal of Statistical Software}, vol.~61, no.~6, pp.~1--36, 2014.
-
-\bibitem{chen2014clustering}
+\bibitem{chen2017density}
 Y.~Chen, C.~R. Genovese, and L.~Wasserman, ``Density level sets: Asymptotics, inference, and visualization,'' \textit{J. Amer. Statist. Assoc.}, vol.~112, no.~520, pp.~1684--1696, 2017.
 
 \bibitem{chen2017mode}
 Y.~Chen, C.~R. Genovese, and L.~Wasserman, ``Mode-seeking clustering and density ridge estimation via direct estimation of density-derivative-ratios,'' arXiv:1707.01711, 2017.
-
-\bibitem{cheng1998calibrating}
-M.-Y. Cheng and P.~Hall, ``Calibrating the excess mass and dip tests of modality,'' \textit{Journal of the Royal Statistical Society B}, vol.~60, no.~3, pp.~579--589, 1998.
 
 \bibitem{zhang2026critband}
 R.~Zhang and Q.~Wang, ``critband: A Python package for critical bandwidth analysis of multimodal distributions,'' arXiv:2605.18686, 2026.

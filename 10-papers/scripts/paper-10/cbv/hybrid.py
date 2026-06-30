@@ -119,7 +119,7 @@ class CBVHybrid:
         affinity: str = "nearest_neighbors",
         min_dim_weight: float = 0.15,
         use_excess_mass: bool = True,
-        adaptive_tolerance: bool = False,
+        adaptive_tolerance: bool = True,
         weight_method: str = "excess_mass",
     ) -> None:
         if k_range[0] < 2:

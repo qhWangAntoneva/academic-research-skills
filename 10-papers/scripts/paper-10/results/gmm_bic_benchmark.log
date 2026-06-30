@@ -1,0 +1,72 @@
+22:16:12 ============================================================
+22:16:12 GMM-BIC Baseline Benchmark
+22:16:12 ============================================================
+22:16:18 Datasets: 44 synthetic + 14 real = 58 total
+22:16:18 
+Seed 42...
+22:16:18   [1/58] blobs_k3_d2_std0.3 (d=2, n=300)
+22:16:20   [11/58] blobs_k5_d2_std2.0 (d=2, n=300)
+22:16:28   [21/58] circles_factor0.5_noise0.05 (d=2, n=300)
+22:16:30   [31/58] imbal_k5_d2_ratio3.0 (d=2, n=300)
+22:16:34   [41/58] moons_noise0.15 (d=2, n=300)
+22:16:43   [51/58] seeds (d=7, n=210)
+22:16:58   Seed 42 complete: BIC accuracy = 31.0%
+22:16:58 
+Seed 73...
+22:16:58   [1/58] blobs_k3_d2_std0.3 (d=2, n=300)
+22:16:59   [11/58] blobs_k5_d2_std2.0 (d=2, n=300)
+22:17:08   [21/58] circles_factor0.5_noise0.05 (d=2, n=300)
+22:17:11   [31/58] imbal_k5_d2_ratio3.0 (d=2, n=300)
+22:17:14   [41/58] moons_noise0.15 (d=2, n=300)
+22:17:29   [51/58] seeds (d=7, n=210)
+22:17:52   Seed 73 complete: BIC accuracy = 31.0%
+22:17:52 
+Seed 123...
+22:17:52   [1/58] blobs_k3_d2_std0.3 (d=2, n=300)
+22:17:52   [11/58] blobs_k5_d2_std2.0 (d=2, n=300)
+22:18:03   [21/58] circles_factor0.5_noise0.05 (d=2, n=300)
+22:18:05   [31/58] imbal_k5_d2_ratio3.0 (d=2, n=300)
+22:18:09   [41/58] moons_noise0.15 (d=2, n=300)
+22:18:21   [51/58] seeds (d=7, n=210)
+22:18:39   Seed 123 complete: BIC accuracy = 29.3%
+22:18:39 
+Seed 256...
+22:18:39   [1/58] blobs_k3_d2_std0.3 (d=2, n=300)
+22:18:40   [11/58] blobs_k5_d2_std2.0 (d=2, n=300)
+22:18:49   [21/58] circles_factor0.5_noise0.05 (d=2, n=300)
+22:18:52   [31/58] imbal_k5_d2_ratio3.0 (d=2, n=300)
+22:18:55   [41/58] moons_noise0.15 (d=2, n=300)
+22:19:06   [51/58] seeds (d=7, n=210)
+22:19:25   Seed 256 complete: BIC accuracy = 31.0%
+22:19:25 
+Seed 999...
+22:19:25   [1/58] blobs_k3_d2_std0.3 (d=2, n=300)
+22:19:25   [11/58] blobs_k5_d2_std2.0 (d=2, n=300)
+22:19:35   [21/58] circles_factor0.5_noise0.05 (d=2, n=300)
+22:19:37   [31/58] imbal_k5_d2_ratio3.0 (d=2, n=300)
+22:19:41   [41/58] moons_noise0.15 (d=2, n=300)
+22:19:53   [51/58] seeds (d=7, n=210)
+22:20:10   Seed 999 complete: BIC accuracy = 31.0%
+22:20:10 
+Results shape: (290, 5)
+22:20:10 
+Aggregate across 5 seeds:
+22:20:10 GMM-BIC: 30.7% ± 0.8%
+22:20:10 
+Comparison (mean accuracy across seeds):
+22:20:10   Silhouette: 38.3%
+22:20:10   CH Index: 44.8%
+22:20:10   Davies-Bouldin: 30.0%
+22:20:10   Gap Statistic: 53.8%
+22:20:10   Dunn Index: 24.8%
+22:20:10   Hartigan: 3.4%
+22:20:10   KL Index: 34.1%
+22:20:10   Jump Statistic: 33.1%
+22:20:10   McClain-Rao: 11.0%
+22:20:10   CBV: 51.4%
+22:20:10   GMM-BIC: 30.7%
+22:20:10 
+Saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\gmm_bic_results.csv
+22:20:10 
+============================================================
+22:20:10 GMM-BIC benchmark complete.

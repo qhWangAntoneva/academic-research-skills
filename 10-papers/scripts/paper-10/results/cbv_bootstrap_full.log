@@ -1,0 +1,19 @@
+22:36:42 ============================================================
+22:36:42 CBV Full Bootstrap Confidence Intervals (58 datasets)
+22:36:42 ============================================================
+22:36:58 Total: 58 datasets
+22:36:58   [1/58] blobs_k3_d2_std0.3 (n=300, d=2)
+22:38:58     -> k_hat=3, CI=[3,4], range=1, stable=1
+22:38:58   [6/58] blobs_k8_d2_std0.5 (n=300, d=2)
+22:41:01     -> k_hat=3, CI=[3,3], range=0, stable=1
+22:41:01   [11/58] blobs_k5_d2_std2.0 (n=300, d=2)
+22:46:09     -> k_hat=2, CI=[2,2], range=0, stable=1
+22:46:09   [16/58] classif_k3_info3_noise8 (n=300, d=11)
+22:48:55     -> k_hat=2, CI=[2,3], range=1, stable=1
+22:48:55   [21/58] circles_factor0.5_noise0.05 (n=300, d=2)
+23:06:16     -> k_hat=3, CI=[3,3], range=0, stable=1
+23:06:16   [26/58] aniso_k3_d2_stretch3.0 (n=300, d=2)
+23:07:47     -> k_hat=3, CI=[3,4], range=1, stable=1
+23:07:47   [31/58] imbal_k5_d2_ratio3.0 (n=300, d=2)
+23:09:40     -> k_hat=4, CI=[3,4], range=1, stable=1
+23:09:40   [36/58] blobs_k12_d2_std0.5 (n=600, d=2)

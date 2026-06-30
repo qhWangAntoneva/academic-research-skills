@@ -62,7 +62,7 @@ class CBVAdapter:
         self.name = 'CBV'
         self.idx = CBVHybrid(
             k_range=k_range, n_boot=n_boot, random_state=random_state,
-            mode='threshold', vote_method='mode', use_excess_mass=False,
+            mode='threshold', vote_method='mode', use_excess_mass=True, adaptive_tolerance=True,
         )
     def fit(self, X):
         self.idx.fit(X)

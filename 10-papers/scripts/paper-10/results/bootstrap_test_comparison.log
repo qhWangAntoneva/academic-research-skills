@@ -1,0 +1,43 @@
+22:36:42 ============================================================
+22:36:42 Bootstrap Sequential Test vs Heuristic Threshold Comparison
+22:36:42 ============================================================
+22:36:53 Datasets: 44 synthetic + 14 real = 58 total
+22:36:53 
+Running comparison...
+22:36:53   [1/58] blobs_k3_d2_std0.3 (n=300, d=2)
+22:47:12 ============================================================
+22:47:12 Bootstrap Sequential Test Comparison (10-dataset subset)
+22:47:12 ============================================================
+22:47:18 Full: 58 datasets, Subset: 10 (selected for diversity)
+22:47:18   [1/10] blobs_k3_d2_std0.3 (n=300, d=2)...
+22:47:50     elapsed=32s k_true=3 threshold=4 bootstrap=3 agree=False
+22:47:50   [2/10] blobs_k5_d2_std0.5 (n=300, d=2)...
+22:48:44     elapsed=54s k_true=5 threshold=3 bootstrap=5 agree=False
+22:48:44   [3/10] blobs_k3_d2_std1.5 (n=300, d=2)...
+22:49:15     elapsed=31s k_true=3 threshold=3 bootstrap=3 agree=True
+22:49:15   [4/10] moons_noise0.05 (n=300, d=2)...
+22:49:25     elapsed=9s k_true=2 threshold=2 bootstrap=2 agree=True
+22:49:25   [5/10] blobs_k3_d5_std1.0 (n=300, d=5)...
+22:50:13     elapsed=48s k_true=3 threshold=3 bootstrap=2 agree=False
+22:50:13   [6/10] blobs_k10_d2_std0.5 (n=600, d=2)...
+22:51:45     elapsed=92s k_true=10 threshold=4 bootstrap=6 agree=False
+22:51:45   [7/10] smalln_k3_n50 (n=50, d=2)...
+22:51:48     elapsed=3s k_true=3 threshold=3 bootstrap=3 agree=True
+22:51:48   [8/10] digits_[0, 1] (n=360, d=64)...
+23:00:09     elapsed=501s k_true=2 threshold=3 bootstrap=4 agree=False
+23:00:09   [9/10] breast_cancer (n=569, d=30)...
+23:04:29     elapsed=260s k_true=2 threshold=2 bootstrap=2 agree=True
+23:04:29   [10/10] glass (n=213, d=9)...
+23:04:58     elapsed=29s k_true=6 threshold=3 bootstrap=2 agree=False
+23:04:58 
+============================================================
+23:04:58 Results on 10 representative datasets:
+23:04:58   Heuristic threshold accuracy: 50%
+23:04:58   Bootstrap sequential test accuracy: 60%
+23:04:58   Agreement: 40%
+23:04:58   Exact match sets: 4/10
+23:04:58 
+Saved to C:\Users\lenovos\academic-research-skills\10-papers\scripts\paper-10\results\bootstrap_test_comparison.csv
+23:04:58 
+============================================================
+23:04:58 Complete.
